@@ -13,7 +13,7 @@ Commands are issued by prefixing a command keyword with a predefined command pre
 
 #### General Commands
 
-Command Keyword | Description
+Keyword | Description
 --------|------------
 `ping` | Ping the bot for a reply.
 `gamechan`* | Change the game channel to the specified channel.
@@ -29,7 +29,7 @@ Command Keyword | Description
 
 #### Game Commands
 
-Command Keyword | Description
+Keyword | Description
 --------|------------
 `call` | Match the current bet.
 `check` | Raise nothing, pass on to the next player.
