@@ -32,7 +32,7 @@ public class PokerBot extends PircBot {
 	private String gameChannel;
 
 	/*
-	 * set of administrators by host name
+	 * set of administrators by hostname
 	 */
 	private Set<String> admins = new HashSet<>();
 
