@@ -43,7 +43,7 @@ The bot operates using a hostname-based authentication system. To register yours
 
 ### Customization
 
-The bot's parameters (e.g. name, game channel, command prefix, admin key) can be customized through the `Constants.java` source file.
+The bot's parameters (e.g. name, game channel, command prefix, admin key) can be customized through the [`Constants.java`](src/me/ars/pokerbot/Constants.java) source file.
 
 
 Requirements
@@ -58,13 +58,13 @@ To-do
 
 - [ ] Side pot logic
 - [ ] Small and big blinds
-- [ ] Further separate front-end (bot) and back-end (poker engine)
+- [ ] Further separation of front-end (bot) and back-end (poker engine)
 
 
 Issues
 ------
 
-PokerBot is still in its early stages of development, so there will likely be various bugs that have been overlooked. If you happen to find one, please submit an issue about it.
+PokerBot is still in its early stages of development, so there will likely be various bugs that have been overlooked. If you happen to find one, please [submit an issue](https://github.com/arshajii/pokerbot/issues/new) about it.
 
 Feel free to also submit an issue to request a feature that does not exist, or to request an enhancement to an existing feature.
 
