@@ -3,6 +3,7 @@ PokerBot -- An IRC Croupier
 
 PokerBot is a lightweight IRC bot used for playing text-based poker (specifically, Texas hold 'em), built on top of the [PircBot framework](http://www.jibble.org/pircbot.php).
 
+![](misc/pokerbot_example_game.png)
 
 Details
 --------
