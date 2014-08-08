@@ -44,8 +44,7 @@ The bot operates using a hostname-based authentication system. To register yours
 
 ### Customization
 
-The bot's parameters (e.g. name, game channel, command prefix, admin key) can be customized through the [`Constants.java`](src/me/ars/pokerbot/Constants.java) source file.
-
+The bot's parameters (e.g. name, game channel, command prefix, admin key) can be customized through the [`parameters.cfg`](parameters.cfg) configuration file.
 
 Requirements
 ------------
