@@ -123,7 +123,7 @@ public class Hand implements Comparable<Hand> {
 		}
 
 		Card.Suit flushSuit = null;
-		List<Card> flushCards = new ArrayList<Card>(7);
+		List<Card> flushCards = new ArrayList<>(7);
 		for (int i = 0; i < 4; i++) {
 			if (suitFreqs[i] >= 5) {
 				flushSuit = Card.Suit.values()[i];
