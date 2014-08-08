@@ -373,7 +373,7 @@ public class Hand implements Comparable<Hand> {
 	@Override
 	public int compareTo(Hand other) {
 		int master = type.compareTo(other.type);
-		
+
 		if (master != 0)
 			return master;
 
