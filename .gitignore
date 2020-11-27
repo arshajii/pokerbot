@@ -9,7 +9,6 @@ Thumbs.db
 bin/*
 lib/*
 *.class
-*.jar
 
 .settings/*
 .project
