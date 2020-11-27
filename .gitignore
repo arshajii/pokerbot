@@ -14,3 +14,9 @@ lib/*
 .settings/*
 .project
 .classpath
+
+.gradle
+/build/
+.idea/
+.idea/*
+/out/
