@@ -8,6 +8,14 @@ PokerBot is a lightweight IRC bot used for playing text-based poker (specificall
 Details
 --------
 
+### Starting up
+
+The bot can be launched with the following command from the root directory:
+
+```
+./gradlew run
+```
+
 ### Commands
 
 Commands are issued by prefixing a command keyword with a predefined command prefix (`.` by default). Available commands are listed below.

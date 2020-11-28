@@ -6,7 +6,7 @@ import org.jibble.pircbot.IrcException;
 
 public class Main {
 	public static void main(String[] args) {
-		PokerBot bot = new PokerBot(Constants.GAME_CHANNEL);
+		IrcBot bot = new IrcBot(Constants.GAME_CHANNEL);
 		bot.setVerbose(Constants.VERBOSE);
 
 		try {

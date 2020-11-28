@@ -22,14 +22,16 @@ public class Table {
   }
 
   private boolean verifyCurrentPlayer(Player player) {
+    if (player == null) return false;
     return (player.equals(players.get(turnIndex)));
   }
 
   /**
    * Incoming 'call' from [player]
    */
-  public boolean call(Player player) {
-    if (!verifyCurrentPlayer(player)) return false;
+  public void call(String nick) {
+    final Player player = getPlayer(nick);
+    if (!verifyCurrentPlayer(player)) return;
 
     final int owed = amountOwed(player);
     final int money = player.getMoney();
@@ -44,29 +46,38 @@ public class Table {
     }
 
     pot += player.bet(bet);
-    return true;
+    nextTurn();
+  }
+
+  public boolean isGameInProgress() {
+    return gameInProgress;
+  }
+
+  public List<Player> getPlayers() {
+    return players;
   }
 
   /**
    * Incoming check from [player]
    */
-  public boolean check(Player player) {
-    if (!verifyCurrentPlayer(player)) return false;
+  public void check(String nick) {
+    final Player player = getPlayer(nick);
+    if (!verifyCurrentPlayer(player)) return;
 
     if (player.getAmountPayed() >= raise) {
       irc.messageChannel(player.getName() + " checked!");
-      return true;
+      nextTurn();
     } else {
       irc.messageChannel(player.getName() + " must at least call last raise (" + moneyString(amountOwed(player)) + ").");
-      return false;
     }
   }
 
   /**
    * Incoming raise from [player]
    */
-  public boolean raise(Player player, int newRaise) {
-    if (!verifyCurrentPlayer(player)) return false;
+  public void raise(String nick, int newRaise) {
+    final Player player = getPlayer(nick);
+    if (!verifyCurrentPlayer(player)) return;
 
     final int totalBet = amountOwed(player) + newRaise;
     final int money = player.getMoney();
@@ -78,45 +89,62 @@ public class Table {
       irc.messageChannel(player.getName() + " raised " + moneyString(newRaise) + ".");
 
       lastIndex = lastUnfolded(turnIndex - 1);
-      return true;
+      nextTurn();
     } else {
       irc.messageChannel(player.getName() + " doesn't have enough money. They need " + moneyString(totalBet) + " but only have " + moneyString(money) + ".");
-      return false;
     }
   }
 
   /**
    * Incoming allin from [player]
    */
-  public boolean allIn(Player player) {
-    if (!verifyCurrentPlayer(player)) return false;
+  public void allIn(String nick) {
+    final Player player = getPlayer(nick);
+    if (!verifyCurrentPlayer(player)) return;
     final int owed = amountOwed(player);
     final int money = player.getMoney();
 
     irc.messageChannel(player.getName() + " goes all in!");
 
     if (money > owed) {
-      return raise(player, money - owed);
+      raise(nick, money - owed);
     } else {
-      return call(player);
+      call(nick);
     }
   }
 
   /**
    * Incoming fold from [player]
    */
-  public boolean fold(Player player) {
-    if (!verifyCurrentPlayer(player)) return false;
+  public void fold(String nick) {
+    final Player player = getPlayer(nick);
+    if (!verifyCurrentPlayer(player)) return;
     player.fold();
     irc.messageChannel(player.getName() + " folds.");
-    return !checkForWinByFold();
+    final boolean nextTurn = !checkForWinByFold();
+    if (nextTurn) {
+      nextTurn();
+    }
   }
 
-  private boolean cashout() {
-    final Player player = players.get(turnIndex);
+  public void cashout(String nick) {
+    final Player player = getPlayer(nick);
+    if (!verifyCurrentPlayer(player)) return;
     player.cashout();
     irc.messageChannel(player.getName() + " cashed out with " + moneyString(player.getMoney()) + "!");
-    return !checkForWinByFold();
+    final boolean nextTurn = !checkForWinByFold();
+    if (nextTurn) {
+      nextTurn();
+    }
+  }
+
+  public Player getPlayer(String nick) {
+    for(Player player: players) {
+      if (player.getName().equals(nick)) {
+        return player;
+      }
+    }
+    return null;
   }
 
   /**
@@ -307,7 +335,7 @@ public class Table {
     }
   }
 
-  private void startGame() {
+  public void startGame() {
     irc.messageChannel("Starting game with: "
         + players.stream().map(Player::getName)
         .collect(Collectors.joining(", ")) + ".");
@@ -317,7 +345,7 @@ public class Table {
     setupHand();
   }
 
-  private void stopGame() {
+  public void stopGame() {
     gameInProgress = false;
     players.clear();
     deck.clear();
@@ -391,5 +419,29 @@ public class Table {
     if (n < 0)
       n = players.size() - 1;
     return n;
+  }
+
+  public void clearPlayers() {
+    players.clear();
+  }
+
+  public void unjoin(String sender) {
+    final Iterator<Player> iter = players.iterator();
+    boolean everJoined = false;
+
+    while (iter.hasNext()) {
+      Player player = iter.next();
+
+      if (player.getName().equals(sender)) {
+        iter.remove();
+        irc.messageChannel(sender + ": You have unjoined.");
+        everJoined = true;
+        break;
+      }
+    }
+
+    if (!everJoined) {
+      irc.messageChannel(sender + ": You had never joined.");
+    }
   }
 }
