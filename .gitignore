@@ -7,7 +7,6 @@ ehthumbs.db
 Thumbs.db
 
 bin/*
-lib/*
 *.class
 
 .settings/*

@@ -29,10 +29,10 @@ public class IrcBot extends PircBot implements IrcCallback {
    */
   private String gameChannel;
 
-	/**
-	 * todo: support multiple of these!
-	 */
-	private Table table;
+  /**
+   * todo: support multiple of these!
+   */
+  private Table table;
 
   /*
    * set of administrators by hostname
@@ -54,6 +54,13 @@ public class IrcBot extends PircBot implements IrcCallback {
       System.err.println("UTF-8 must be supported.");
       System.exit(1);
     }
+  }
+
+  public void joinGameChannel(String key) {
+    if (key == null)
+      joinChannel(gameChannel);
+    else
+      joinChannel(gameChannel, key);
   }
 
   @Override
@@ -96,7 +103,7 @@ public class IrcBot extends PircBot implements IrcCallback {
         break;
       }
       case "join": {
-      	final boolean success = table.registerPlayer(sender);
+        final boolean success = table.registerPlayer(sender);
 
         if (success) {
           sendReply(channel, sender, "You have now joined! Please wait for the game to start.");
@@ -106,7 +113,7 @@ public class IrcBot extends PircBot implements IrcCallback {
         break;
       }
       case "unjoin": {
-      	table.unjoin(sender);
+        table.unjoin(sender);
         break;
       }
       case "joined": {
@@ -136,15 +143,15 @@ public class IrcBot extends PircBot implements IrcCallback {
           break;
         }
         table.clearPlayers();
-			  sendMessage(channel, "Players list cleared.");
+        sendMessage(channel, "Players list cleared.");
         break;
       }
       case "start": {
-      	if (table.getPlayers().size() > 1) {
-					table.startGame();
-				} else {
-					sendReply(channel, sender, "Need at least 2 players to join before starting.");
-				}
+        if (table.getPlayers().size() > 1) {
+          table.startGame();
+        } else {
+          sendReply(channel, sender, "Need at least 2 players to join before starting.");
+        }
         break;
       }
       case "stop": {
@@ -166,7 +173,7 @@ public class IrcBot extends PircBot implements IrcCallback {
           // calling what??
           break;
         }
-				table.call(sender);
+        table.call(sender);
         break;
       }
       case "check": {
@@ -203,7 +210,7 @@ public class IrcBot extends PircBot implements IrcCallback {
           break;
         }
 
-				table.raise(sender, newRaise);
+        table.raise(sender, newRaise);
 
         break;
       }
@@ -211,7 +218,7 @@ public class IrcBot extends PircBot implements IrcCallback {
         if (!table.isGameInProgress()) {
           break;
         }
-				table.allIn(sender);
+        table.allIn(sender);
         break;
       }
       case "fold": {
@@ -237,7 +244,7 @@ public class IrcBot extends PircBot implements IrcCallback {
     }
   }
 
-	private boolean isAdmin(String hostname) {
+  private boolean isAdmin(String hostname) {
     return admins.contains(hostname);
   }
 
@@ -265,12 +272,12 @@ public class IrcBot extends PircBot implements IrcCallback {
     }
   }
 
-	private void addAdmin(String hostname) {
-		admins.add(hostname);
-	}
+  private void addAdmin(String hostname) {
+    admins.add(hostname);
+  }
 
 
-	protected void sendReply(String target, String name, String message) {
+  protected void sendReply(String target, String name, String message) {
     sendMessage(target, Colors.BOLD + name + Colors.NORMAL + ": " + message);
   }
 
