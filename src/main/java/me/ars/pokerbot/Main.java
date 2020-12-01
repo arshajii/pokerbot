@@ -17,7 +17,7 @@ public class Main {
 				bot.connect(Constants.HOST, Constants.PORT,
 						Constants.SERVER_PASS, new TrustingSSLSocketFactory());
 			}
-			bot.joinGameChannel(Constants.CHANNEL_KEY);
+			bot.joinGameChannel(Constants.GAME_CHANNEL, Constants.CHANNEL_KEY);
 		} catch (IrcException | IOException e) {
 			e.printStackTrace();
 		}

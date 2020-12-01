@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 public class Table {
 
+  private final String channel;
   private final IrcCallback irc;
   private final List<Player> players = new ArrayList<>();
   private final Queue<Card> deck = new ArrayDeque<>(52);
@@ -17,13 +18,22 @@ public class Table {
   private int pot;
   private int raise;
 
-  public Table(IrcCallback irc) {
+  public Table(IrcCallback irc, String channel) {
     this.irc = irc;
+    this.channel = channel;
   }
 
   private boolean verifyCurrentPlayer(Player player) {
     if (player == null) return false;
     return (player.equals(players.get(turnIndex)));
+  }
+
+  private void messageChannel(String message) {
+    irc.messageChannel(channel, message);
+  }
+
+  private void messagePlayer(Player player, String message) {
+    irc.messagePlayer(player, "[" + channel + "] " + message);
   }
 
   /**
@@ -38,10 +48,10 @@ public class Table {
     int bet;
 
     if (money >= owed) {
-      irc.messageChannel("You called! (" + moneyString(owed) + ")");
+      messageChannel("You called! (" + moneyString(owed) + ")");
       bet = owed;
     } else {
-      irc.messageChannel("You called! (" + moneyString(money) + " of " + moneyString(owed) + ")");
+      messageChannel("You called! (" + moneyString(money) + " of " + moneyString(owed) + ")");
       bet = money;
     }
 
@@ -65,10 +75,10 @@ public class Table {
     if (!verifyCurrentPlayer(player)) return;
 
     if (player.getAmountPayed() >= raise) {
-      irc.messageChannel(player.getName() + " checked!");
+      messageChannel(player.getName() + " checked!");
       nextTurn();
     } else {
-      irc.messageChannel(player.getName() + " must at least call last raise (" + moneyString(amountOwed(player)) + ").");
+      messageChannel(player.getName() + " must at least call last raise (" + moneyString(amountOwed(player)) + ").");
     }
   }
 
@@ -86,12 +96,12 @@ public class Table {
       pot += player.bet(totalBet);
       raise += newRaise;
 
-      irc.messageChannel(player.getName() + " raised " + moneyString(newRaise) + ".");
+      messageChannel(player.getName() + " raised " + moneyString(newRaise) + ".");
 
       lastIndex = lastUnfolded(turnIndex - 1);
       nextTurn();
     } else {
-      irc.messageChannel(player.getName() + " doesn't have enough money. They need " + moneyString(totalBet) + " but only have " + moneyString(money) + ".");
+      messageChannel(player.getName() + " doesn't have enough money. They need " + moneyString(totalBet) + " but only have " + moneyString(money) + ".");
     }
   }
 
@@ -104,7 +114,7 @@ public class Table {
     final int owed = amountOwed(player);
     final int money = player.getMoney();
 
-    irc.messageChannel(player.getName() + " goes all in!");
+    messageChannel(player.getName() + " goes all in!");
 
     if (money > owed) {
       raise(nick, money - owed);
@@ -120,7 +130,7 @@ public class Table {
     final Player player = getPlayer(nick);
     if (!verifyCurrentPlayer(player)) return;
     player.fold();
-    irc.messageChannel(player.getName() + " folds.");
+    messageChannel(player.getName() + " folds.");
     final boolean nextTurn = !checkForWinByFold();
     if (nextTurn) {
       nextTurn();
@@ -131,7 +141,7 @@ public class Table {
     final Player player = getPlayer(nick);
     if (!verifyCurrentPlayer(player)) return;
     player.cashout();
-    irc.messageChannel(player.getName() + " cashed out with " + moneyString(player.getMoney()) + "!");
+    messageChannel(player.getName() + " cashed out with " + moneyString(player.getMoney()) + "!");
     final boolean nextTurn = !checkForWinByFold();
     if (nextTurn) {
       nextTurn();
@@ -164,7 +174,7 @@ public class Table {
     for (Player player : players) {
       final Card card1 = deck.poll();
       final Card card2 = deck.poll();
-      irc.messagePlayer(player, "Your cards: " + card1 + ", " + card2);
+      messagePlayer(player, "Your cards: " + card1 + ", " + card2);
       player.receiveCards(card1, card2);
     }
   }
@@ -190,12 +200,12 @@ public class Table {
     }
 
     if (players.size() < 2) {
-      irc.messageChannel("Not enough players left to continue: game ended.");
+      messageChannel("Not enough players left to continue: game ended.");
       stopGame();
       return;
     }
 
-    irc.messageChannel("Starting new hand...");
+    messageChannel("Starting new hand...");
 
     for (Player player : players) {
       player.newHand();
@@ -213,7 +223,7 @@ public class Table {
     raise = Constants.ANTE;
     // TODO: Blinds
 
-    irc.messageChannel(
+    messageChannel(
         players.stream()
             .map(p -> "[" + p.getName()
                 + " - "
@@ -263,7 +273,7 @@ public class Table {
             winners.add(next);
         }
 
-        irc.messageChannel(
+        messageChannel(
             "Reveal: "
                 + players
                 .stream()
@@ -274,10 +284,10 @@ public class Table {
         int numWinners = winners.size();
 
         if (numWinners == 1) {
-          irc.messageChannel(winner1.getName() + " wins with the hand " + winningHand + "!");
+          messageChannel(winner1.getName() + " wins with the hand " + winningHand + "!");
           winner1.win(pot);
         } else {
-          irc.messageChannel(
+          messageChannel(
               "Split pot between "
                   + winners.stream().map(Hand::getPlayer)
                   .map(Player::getName)
@@ -312,13 +322,13 @@ public class Table {
     final String tableStr = table.isEmpty() ? "no cards" : table.stream()
         .map(Card::toString).collect(Collectors.joining(", "));
 
-    irc.messageChannel("On the table: " + tableStr + " || In the pot: " + moneyString(pot));
+    messageChannel("On the table: " + tableStr + " || In the pot: " + moneyString(pot));
 
-    irc.messageChannel(turn + "'s turn!");
+    messageChannel(turn + "'s turn!");
   }
 
   private void collectAntes() {
-    irc.messageChannel("Collecting a " + moneyString(Constants.ANTE) + " ante from each player...");
+    messageChannel("Collecting a " + moneyString(Constants.ANTE) + " ante from each player...");
 
     for (Player player : players) {
       pot += player.bet(Constants.ANTE);
@@ -336,7 +346,7 @@ public class Table {
   }
 
   public void startGame() {
-    irc.messageChannel("Starting game with: "
+    messageChannel("Starting game with: "
         + players.stream().map(Player::getName)
         .collect(Collectors.joining(", ")) + ".");
 
@@ -351,7 +361,7 @@ public class Table {
     deck.clear();
     table.clear();
 
-    irc.messageChannel("Game stopped.");
+    messageChannel("Game stopped.");
   }
 
   private boolean checkForWinByFold() {
@@ -365,7 +375,7 @@ public class Table {
     }
 
     if (numPlayersLeft == 1) {
-      irc.messageChannel(last.getName() + " wins (all other players folded)!");
+      messageChannel(last.getName() + " wins (all other players folded)!");
 
       last.win(pot);
       setupHand();
@@ -434,14 +444,14 @@ public class Table {
 
       if (player.getName().equals(sender)) {
         iter.remove();
-        irc.messageChannel(sender + ": You have unjoined.");
+        messageChannel(sender + ": You have unjoined.");
         everJoined = true;
         break;
       }
     }
 
     if (!everJoined) {
-      irc.messageChannel(sender + ": You had never joined.");
+      messageChannel(sender + ": You had never joined.");
     }
   }
 }

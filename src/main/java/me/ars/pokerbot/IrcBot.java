@@ -4,9 +4,7 @@ import org.jibble.pircbot.Colors;
 import org.jibble.pircbot.PircBot;
 
 import java.io.UnsupportedEncodingException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -18,24 +16,16 @@ public class IrcBot extends PircBot implements IrcCallback {
    */
   private static final Pattern SPACES = Pattern.compile("\\s+");
 
-  /*
-   * channel in which the games will be played
-   */
-  private String gameChannel;
-
-  /**
-   * todo: support multiple of these!
-   */
-  private Table table;
+  private Map<String, Table> tables;
 
   /*
    * set of administrators by hostname
    */
   private Set<String> admins = new HashSet<>();
 
-  public IrcBot(String gameChannel) {
-    this.gameChannel = gameChannel;
-    table = new Table(this);
+  public IrcBot(String startingChannel) {
+    tables = new HashMap<>();
+    tables.put(startingChannel, new Table(this, startingChannel));
 
     setName(Constants.BOT_NAME);
     setAutoNickChange(true);
@@ -50,11 +40,11 @@ public class IrcBot extends PircBot implements IrcCallback {
     }
   }
 
-  public void joinGameChannel(String key) {
+  public void joinGameChannel(String channel, String key) {
     if (key == null)
-      joinChannel(gameChannel);
+      joinChannel(channel);
     else
-      joinChannel(gameChannel, key);
+      joinChannel(channel, key);
   }
 
   @Override
@@ -63,42 +53,18 @@ public class IrcBot extends PircBot implements IrcCallback {
   }
 
   @Override
-  public void onMessage(String channel, String sender, String login,
-                        String hostname, String message) {
+  public void onMessage(String channel, String sender, String login, String hostname, String message) {
 
-    if (!gameChannel.equals(channel) || message.isEmpty() || message.charAt(0) != Constants.CMD_PREFIX) {
+    if (!tables.containsKey(channel) || message.isEmpty() || message.charAt(0) != Constants.CMD_PREFIX) {
       return;
     }
 
     final String[] split = SPACES.split(message);
+    final Table table = tables.get(channel);
 
     switch (split[0].substring(1)) {
       case "ping": {
         sendMessage(channel, Colors.BOLD + sender + Colors.NORMAL + ": " + message);
-        break;
-      }
-      case "gamechan": {
-        if (!isAdmin(hostname)) {
-          sendMessage(channel, sender + ": Only an admin can change the game channel.");
-          break;
-        }
-
-        if (table.isGameInProgress()) {
-          sendReply(
-              channel,
-              sender,
-              "A game is currently in progress. The current game "
-                  + "must be stopped before changing the game channel.");
-          break;
-        }
-
-        if (split.length > 2)
-          joinChannel(split[1], split[2]);
-        else
-          joinChannel(split[1]);
-
-        partChannel(gameChannel);
-        gameChannel = split[1];
         break;
       }
       case "join": {
@@ -268,6 +234,34 @@ public class IrcBot extends PircBot implements IrcCallback {
           sendMessage(sender, "Incorrect key.");
         }
         break;
+      case "createtable": {
+        if (split.length < 2) {
+          sendMessage(sender, "You need to specify a channel where I'm creating a table");
+          break;
+        }
+        final String newChannel = split[1];
+        if (tables.containsKey(newChannel)) {
+          sendMessage(sender, "#" + newChannel + " already has a table.");
+          break;
+        }
+        tables.put(newChannel, new Table(this, newChannel));
+        if (split.length > 2) {
+          joinChannel(newChannel, split[2]);
+        } else {
+          joinChannel(newChannel);
+        }
+        sendMessage(sender, "Table created. To remove the table, simply kick the bot from the channel.");
+        break;
+      }
+    }
+  }
+
+  @Override
+  protected void onKick(String channel, String kickerNick, String kickerLogin, String kickerHostname, String recipientNick, String reason) {
+    if (recipientNick.equals(getNick()) && tables.containsKey(channel)) {
+      final Table table = tables.get(channel);
+      table.stopGame();
+      tables.remove(channel);
     }
   }
 
@@ -281,8 +275,8 @@ public class IrcBot extends PircBot implements IrcCallback {
   }
 
   @Override
-  public void messageChannel(String message) {
-    sendMessage(gameChannel, message);
+  public void messageChannel(String channel, String message) {
+    sendMessage(channel, message);
   }
 
   @Override
