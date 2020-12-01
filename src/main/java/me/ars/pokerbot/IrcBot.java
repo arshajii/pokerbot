@@ -1,20 +1,14 @@
 package me.ars.pokerbot;
 
+import org.jibble.pircbot.Colors;
+import org.jibble.pircbot.PircBot;
+
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-
-import org.jibble.pircbot.Colors;
-import org.jibble.pircbot.PircBot;
 
 public class IrcBot extends PircBot implements IrcCallback {
 
@@ -61,6 +55,11 @@ public class IrcBot extends PircBot implements IrcCallback {
       joinChannel(gameChannel);
     else
       joinChannel(gameChannel, key);
+  }
+
+  @Override
+  protected String getUserString() {
+    return getName() + " " + getName() + " " + getName() + " :" + getName();
   }
 
   @Override
