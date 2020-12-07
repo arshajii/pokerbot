@@ -37,7 +37,7 @@ public class Card implements Comparable<Card> {
 	private final int value;
 	private final Suit suit;
 
-	private Card(final int value, final Suit suit) {
+	public Card(final int value, final Suit suit) {
 		this.value = value;
 		this.suit = suit;
 	}

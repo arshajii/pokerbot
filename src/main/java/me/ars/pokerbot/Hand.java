@@ -98,7 +98,7 @@ public class Hand implements Comparable<Hand> {
 		if (uniqueCards.size() - index < 5)
 			return false;
 
-		int upper = index + 5;
+		int upper = index + 4;
 		for (int i = index; i < upper; i++) {
 			int v1 = uniqueCards.get(i).getValue();
 			int v2 = uniqueCards.get(i + 1).getValue();
