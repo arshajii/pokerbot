@@ -8,6 +8,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.text.SimpleDateFormat;
 
 public class IrcBot extends PircBot implements IrcCallback {
 
@@ -16,7 +17,7 @@ public class IrcBot extends PircBot implements IrcCallback {
    * for parsing commands
    */
   private static final Pattern SPACES = Pattern.compile("\\s+");
-
+  private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy MMM dd HH:mm:ss");
   private Map<String, Table> tables;
 
   private Roster roster;
@@ -125,7 +126,7 @@ public class IrcBot extends PircBot implements IrcCallback {
         if (activity == null) {
           sendMessage(channel, "There hasn't been any activity on this table.");
         } else {
-          sendMessage(channel, "Last activity: " + activity.toString());
+          sendMessage(channel, "Last activity: " + sdf.format(activity.getTime()));
         }
         break;
       }
