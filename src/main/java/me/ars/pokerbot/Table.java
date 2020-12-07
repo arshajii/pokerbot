@@ -11,6 +11,7 @@ public class Table {
   private final Queue<Card> deck = new ArrayDeque<>(52);
   private final List<Card> table = new ArrayList<>(5);
 
+  private Calendar lastActivity = null;
   private boolean gameInProgress = false;
   private int turnIndex;
   private int lastIndex;
@@ -36,12 +37,21 @@ public class Table {
     irc.messagePlayer(player, "[" + channel + "] " + message);
   }
 
+  public Calendar getLastActivity() {
+    return lastActivity;
+  }
+
+  private void setActivity() {
+    lastActivity = Calendar.getInstance();
+  }
+
   /**
    * Incoming 'call' from [player]
    */
   public void call(String nick) {
     final Player player = getPlayer(nick);
     if (!verifyCurrentPlayer(player)) return;
+    setActivity();
 
     final int owed = amountOwed(player);
     final int money = player.getMoney();
@@ -73,6 +83,7 @@ public class Table {
   public void check(String nick) {
     final Player player = getPlayer(nick);
     if (!verifyCurrentPlayer(player)) return;
+    setActivity();
 
     if (player.getAmountPayed() >= raise) {
       messageChannel(player.getName() + " checked!");
@@ -88,6 +99,7 @@ public class Table {
   public void raise(String nick, int newRaise) {
     final Player player = getPlayer(nick);
     if (!verifyCurrentPlayer(player)) return;
+    setActivity();
 
     final int totalBet = amountOwed(player) + newRaise;
     final int money = player.getMoney();
@@ -111,6 +123,7 @@ public class Table {
   public void allIn(String nick) {
     final Player player = getPlayer(nick);
     if (!verifyCurrentPlayer(player)) return;
+    setActivity();
     final int owed = amountOwed(player);
     final int money = player.getMoney();
 
@@ -129,6 +142,7 @@ public class Table {
   public void fold(String nick) {
     final Player player = getPlayer(nick);
     if (!verifyCurrentPlayer(player)) return;
+    setActivity();
     player.fold();
     messageChannel(player.getName() + " folds.");
     final boolean nextTurn = !checkForWinByFold();
@@ -140,6 +154,7 @@ public class Table {
   public void cashout(String nick) {
     final Player player = getPlayer(nick);
     if (!verifyCurrentPlayer(player)) return;
+    setActivity();
     player.cashout();
     messageChannel(player.getName() + " cashed out with " + moneyString(player.getMoney()) + "!");
     final boolean nextTurn = !checkForWinByFold();

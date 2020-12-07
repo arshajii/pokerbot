@@ -81,7 +81,7 @@ public class IrcBot extends PircBot implements IrcCallback {
         table.unjoin(sender);
         break;
       }
-      case "joined": {
+      case "players": {
         final List<Player> players = table.getPlayers();
         if (players.isEmpty()) {
           sendMessage(channel, "No joined players.");
@@ -96,13 +96,16 @@ public class IrcBot extends PircBot implements IrcCallback {
 
         break;
       }
-      case "clear": {
-        if (!isAdmin(hostname)) {
-          sendReply(channel, sender,
-              "Only an admin can clear the joined players list.");
-          break;
+      case "activity": {
+        final Calendar activity = table.getLastActivity();
+        if (activity == null) {
+          sendMessage(channel, "There hasn't been any activity on this table.");
+        } else {
+          sendMessage(channel, "Last activity: " + activity.toString());
         }
-
+        break;
+      }
+      case "clear": {
         if (table.isGameInProgress()) {
           sendReply(channel, sender, "A game is already in progress.");
           break;
@@ -112,6 +115,9 @@ public class IrcBot extends PircBot implements IrcCallback {
         break;
       }
       case "start": {
+        if (table.isGameInProgress()) {
+          break;
+        }
         if (table.getPlayers().size() > 1) {
           table.startGame();
         } else {
@@ -120,13 +126,7 @@ public class IrcBot extends PircBot implements IrcCallback {
         break;
       }
       case "stop": {
-        if (!isAdmin(hostname)) {
-          sendReply(channel, sender, "Only an admin can stop the game.");
-          break;
-        }
-
         if (!table.isGameInProgress()) {
-          sendReply(channel, sender, "No game is currently in progress.");
           break;
         }
 
