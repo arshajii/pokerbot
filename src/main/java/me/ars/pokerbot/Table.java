@@ -201,9 +201,10 @@ public class Table {
 
   private void setupHand() {
     for (Player player : players) {
-      if (player.isBroke())
+      if (player.isBroke()) {
         player.cashout();
         roster.modifyMoney(player.getName(), -Constants.START_MONEY);
+      }
     }
 
     if (!buyInPlayers.isEmpty()) {
