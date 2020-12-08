@@ -15,7 +15,7 @@ public class Stats implements Serializable {
     @Override
     public String toString() {
         return  "Player " + nickname +
-                ", money: $" + money +
+                ", winnings: " + money +
                 ", games played: " + games;
     }
 

@@ -397,8 +397,10 @@ public class Table {
     } else {
       int highscore = 0;
       for (Player player: players) {
-        if (player.getMoney() > highscore) {
-          highscore = player.getMoney();
+        final int playerMoney = player.getMoney();
+        roster.modifyMoney(player.getName(), playerMoney);
+        if (playerMoney > highscore) {
+          highscore = playerMoney;
           winner = player;
         }
       }
