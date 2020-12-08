@@ -120,6 +120,7 @@ public class IrcBot extends PircBot implements IrcCallback {
       }
       case "buyin": {
         table.buyin(sender);
+        break;
       }
       case "activity": {
         final Calendar activity = table.getLastActivity();

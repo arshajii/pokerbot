@@ -161,6 +161,7 @@ public class Table {
     setActivity();
     player.cashout();
     messageChannel(player.getName() + " cashed out with " + moneyString(player.getMoney()) + "!");
+    roster.modifyMoney(player.getName(), player.getMoney() - Constants.START_MONEY);
     final boolean nextTurn = !checkForWinByFold();
     if (nextTurn) {
       nextTurn();
@@ -202,11 +203,13 @@ public class Table {
     for (Player player : players) {
       if (player.isBroke())
         player.cashout();
+        roster.modifyMoney(player.getName(), -Constants.START_MONEY);
     }
 
     if (!buyInPlayers.isEmpty()) {
       for (String name : buyInPlayers) {
         players.add(new Player(name));
+        roster.trackGame(name);
       }
     }
     buyInPlayers.clear();
@@ -390,6 +393,14 @@ public class Table {
     Player winner = null;
     if (players.size() == 1) {
       winner = players.get(0);
+    } else {
+      int highscore = 0;
+      for (Player player: players) {
+        if (player.getMoney() > highscore) {
+          highscore = player.getMoney();
+          winner = player;
+        }
+      }
     }
     players.clear();
     deck.clear();
@@ -399,7 +410,6 @@ public class Table {
       messageChannel("Game stopped. No conclusive winner.");
     } else {
       messageChannel("Game stopped. " + winner.getName() + " is the winner!");
-      roster.trackWin(winner.getName());
     }
 
     try {

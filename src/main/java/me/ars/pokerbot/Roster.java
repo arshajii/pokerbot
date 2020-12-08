@@ -38,7 +38,7 @@ public class Roster {
         }
     }
 
-    public void trackWin(String nickname) {
+    public void modifyMoney(String nickname, int newMoney) {
         final Stats stats;
         if (!roster.containsKey(nickname)) {
             stats = new Stats();
@@ -47,7 +47,8 @@ public class Roster {
         } else {
             stats = roster.get(nickname);
         }
-        stats.incrementWins();
+        int oldMoney = stats.getMoney();
+        stats.setMoney(oldMoney + newMoney);
     }
 
     public void trackGame(String nickname) {

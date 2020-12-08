@@ -5,8 +5,8 @@ import java.util.Objects;
 
 public class Stats implements Serializable {
     private String nickname;
-    private int wins;
     private int games;
+    private int money;
 
     public String getNickname() {
         return nickname;
@@ -15,7 +15,7 @@ public class Stats implements Serializable {
     @Override
     public String toString() {
         return  "Player " + nickname +
-                ", wins: " + wins +
+                ", money: $" + money +
                 ", games played: " + games;
     }
 
@@ -36,20 +36,16 @@ public class Stats implements Serializable {
         this.nickname = nickname;
     }
 
-    public void incrementWins() {
-        wins++;
+    public void setMoney(int money) {
+        this.money = money;
+    }
+
+    public int getMoney() {
+        return money;
     }
 
     public void incrementGames() {
         games++;
-    }
-
-    public int getWins() {
-        return wins;
-    }
-
-    public void setWins(int wins) {
-        this.wins = wins;
     }
 
     public int getGames() {
