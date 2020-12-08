@@ -394,11 +394,12 @@ public class Table {
     Player winner = null;
     if (players.size() == 1) {
       winner = players.get(0);
+      roster.modifyMoney(winner.getName(), winner.getMoney() - Constants.START_MONEY);
     } else {
       int highscore = 0;
       for (Player player: players) {
         final int playerMoney = player.getMoney();
-        roster.modifyMoney(player.getName(), playerMoney);
+        roster.modifyMoney(player.getName(), playerMoney - Constants.START_MONEY);
         if (playerMoney > highscore) {
           highscore = playerMoney;
           winner = player;

@@ -39,6 +39,7 @@ public class Roster {
     }
 
     public void modifyMoney(String nickname, int newMoney) {
+        System.out.println("ROSTER: Modifying number for " + nickname + ": $" + newMoney);
         final Stats stats;
         if (!roster.containsKey(nickname)) {
             stats = new Stats();
