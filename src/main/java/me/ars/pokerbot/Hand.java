@@ -114,6 +114,17 @@ public class Hand implements Comparable<Hand> {
 	 * @param cards the 7 cards to be analyzed
 	 */
 	public static Hand getBestHand(Player player, Card... cards) {
+		Card[] acesAsOnes = countAcesAsOnes(cards);
+		final Hand hand1 = bestHand(player, cards);
+		final Hand hand2 = bestHand(player, acesAsOnes);
+		if (hand1.compareTo(hand2) > 0) {
+			return hand1;
+		} else {
+			return hand2;
+		}
+	}
+
+	private static Hand bestHand(Player player, Card... cards) {
 		Arrays.sort(cards);
 
 		int[] suitFreqs = new int[4];
@@ -152,8 +163,15 @@ public class Hand implements Comparable<Hand> {
 		}
 
 		int[] freqs = new int[13];
-		for (Card card : cards) {
-			freqs[card.getValue() - 2]++;
+
+		if (containsOnes(cards)) {
+			for (Card card : cards) {
+				freqs[card.getValue() - 1]++;
+			}
+		} else {
+			for (Card card : cards) {
+				freqs[card.getValue() - 2]++;
+			}
 		}
 
 		int maxIndex = 0;
@@ -459,8 +477,10 @@ public class Hand implements Comparable<Hand> {
 				if (master != 0)
 					return master;
 			}
+			return 0;
 		}
 		default:
+			System.err.println("Couldn't compare types: " + type + " to " + other.type);
 			throw new IllegalStateException();
 		}
 	}
@@ -480,6 +500,27 @@ public class Hand implements Comparable<Hand> {
 		hash[bestHand.length] = type.hashCode();
 
 		return Arrays.hashCode(hash);
+	}
+
+	private static Card[] countAcesAsOnes(Card[] cards) {
+		Card[] newCards = new Card[cards.length];
+		for(int i = 0; i < cards.length; i++) {
+			if (cards[i].getValue() == 14) {
+				newCards[i] = new Card(1, cards[i].getSuit());
+			} else {
+				newCards[i] = cards[i];
+			}
+		}
+		return newCards;
+	}
+
+	private static boolean containsOnes(Card[] cards) {
+		for( Card card: cards) {
+			if (card.getValue() == 1) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Override
