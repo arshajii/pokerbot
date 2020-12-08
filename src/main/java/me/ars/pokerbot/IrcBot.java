@@ -117,6 +117,9 @@ public class IrcBot extends PircBot implements IrcCallback {
 
         break;
       }
+      case "buyin": {
+        table.buyin(sender);
+      }
       case "activity": {
         final Calendar activity = table.getLastActivity();
         if (activity == null) {
@@ -160,12 +163,12 @@ public class IrcBot extends PircBot implements IrcCallback {
       }
       case "call": {
         if (!table.isGameInProgress()) {
-          // calling what??
           break;
         }
         table.call(sender);
         break;
       }
+      case "czech":
       case "check": {
         if (!table.isGameInProgress()) {
           break;
@@ -174,6 +177,7 @@ public class IrcBot extends PircBot implements IrcCallback {
         table.check(sender);
         break;
       }
+      case "r":
       case "raise": {
         if (!table.isGameInProgress()) {
           break;
@@ -211,6 +215,7 @@ public class IrcBot extends PircBot implements IrcCallback {
         table.allIn(sender);
         break;
       }
+      case "f":
       case "fold": {
         if (!table.isGameInProgress()) {
           break;

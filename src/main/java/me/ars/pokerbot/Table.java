@@ -11,6 +11,7 @@ public class Table {
   private final List<Player> players = new ArrayList<>();
   private final Queue<Card> deck = new ArrayDeque<>(52);
   private final List<Card> table = new ArrayList<>(5);
+  private final Queue<String> buyInPlayers = new ArrayDeque<>();
   private final Roster roster;
 
   private Calendar lastActivity = null;
@@ -202,6 +203,13 @@ public class Table {
       if (player.isBroke())
         player.cashout();
     }
+
+    if (!buyInPlayers.isEmpty()) {
+      for (String name : buyInPlayers) {
+        players.add(new Player(name));
+      }
+    }
+    buyInPlayers.clear();
 
     final Iterator<Player> playerIter = players.iterator();
     int index = 0;
@@ -488,8 +496,31 @@ public class Table {
       }
     }
 
-    if (!everJoined) {
-      messageChannel(sender + ": You had never joined.");
+    if (buyInPlayers.contains(sender)) {
+      messageChannel(sender + ": Your buyin was nulled.");
+      buyInPlayers.remove(sender);
+    } else if (!everJoined) {
+      messageChannel(sender + ": You never joined.");
     }
+  }
+
+  public void buyin(String sender) {
+    if (!gameInProgress) {
+      messageChannel(sender + ": Game hasn't started yet, putting you up for the game");
+      registerPlayer(sender);
+      return;
+    }
+    for(Player player: players) {
+      if (player.getName().equals(sender)) {
+        messageChannel(sender + ": You're already in the game.");
+        return;
+      }
+    }
+    if (buyInPlayers.contains(sender)) {
+      messageChannel(sender + ": You've already bought in");
+      return;
+    }
+    buyInPlayers.add(sender);
+    messageChannel(sender + " has bought in the game, will join on next hand.");
   }
 }
