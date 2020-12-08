@@ -10,6 +10,7 @@ public class Table {
   private final List<Player> players = new ArrayList<>();
   private final Queue<Card> deck = new ArrayDeque<>(52);
   private final List<Card> table = new ArrayList<>(5);
+  private final Roster roster;
 
   private Calendar lastActivity = null;
   private boolean gameInProgress = false;
@@ -19,9 +20,10 @@ public class Table {
   private int pot;
   private int raise;
 
-  public Table(IrcCallback irc, String channel) {
+  public Table(IrcCallback irc, String channel, Roster roster) {
     this.irc = irc;
     this.channel = channel;
+    this.roster = roster;
   }
 
   private boolean verifyCurrentPlayer(Player player) {
@@ -365,6 +367,10 @@ public class Table {
         + players.stream().map(Player::getName)
         .collect(Collectors.joining(", ")) + ".");
 
+    for (Player player : players) {
+      roster.trackGame(player.getName());
+    }
+
     gameInProgress = true;
     startPlayer = 0;
     setupHand();
@@ -372,11 +378,20 @@ public class Table {
 
   public void stopGame() {
     gameInProgress = false;
+    Player winner = null;
+    if (players.size() == 1) {
+      winner = players.get(0);
+    }
     players.clear();
     deck.clear();
     table.clear();
 
-    messageChannel("Game stopped.");
+    if (winner == null) {
+      messageChannel("Game stopped. No conclusive winner.");
+    } else {
+      messageChannel("Game stopped. " + winner.getName() + " is the winner!");
+      roster.trackWin(winner.getName());
+    }
   }
 
   private boolean checkForWinByFold() {

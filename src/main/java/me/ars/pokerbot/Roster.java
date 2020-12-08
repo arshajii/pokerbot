@@ -1,0 +1,61 @@
+package me.ars.pokerbot;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.util.HashMap;
+import java.util.Map;
+
+public class Roster {
+    private static final String ROSTER_FILE = "roster.txt";
+    private final Map<String, Stats> roster;
+
+    private Roster() {
+        roster = new HashMap<>();
+    }
+
+    public static Roster getRoster() throws IOException {
+        Roster roster = new Roster();
+        final File rosterFile = new File(ROSTER_FILE);
+        if (!rosterFile.exists()) {
+            rosterFile.createNewFile();
+        } else {
+            try (ObjectInputStream stream = new ObjectInputStream(new FileInputStream(rosterFile))) {
+                final Map<String, Stats> input = (Map<String, Stats>)stream.readObject();
+                roster.roster.putAll(input);
+            } catch (ClassNotFoundException e) {
+                throw new IOException("Invalid stats file", e);
+            }
+        }
+        return roster;
+    }
+
+    public void trackWin(String nickname) {
+        final Stats stats;
+        if (!roster.containsKey(nickname)) {
+            stats = new Stats();
+            stats.setNickname(nickname);
+            roster.put(nickname, stats);
+        } else {
+            stats = roster.get(nickname);
+        }
+        stats.incrementWins();
+    }
+
+    public void trackGame(String nickname) {
+        final Stats stats;
+        if (!roster.containsKey(nickname)) {
+            stats = new Stats();
+            stats.setNickname(nickname);
+            roster.put(nickname, stats);
+        } else {
+            stats = roster.get(nickname);
+        }
+        stats.incrementGames();
+    }
+
+    public Stats getStats(String nickname) {
+        return roster.get(nickname);
+    }
+}

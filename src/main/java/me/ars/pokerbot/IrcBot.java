@@ -3,6 +3,7 @@ package me.ars.pokerbot;
 import org.jibble.pircbot.Colors;
 import org.jibble.pircbot.PircBot;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -18,14 +19,21 @@ public class IrcBot extends PircBot implements IrcCallback {
 
   private Map<String, Table> tables;
 
+  private Roster roster;
+
   /*
    * set of administrators by hostname
    */
   private Set<String> admins = new HashSet<>();
 
   public IrcBot(String startingChannel) {
+    try {
+      roster = Roster.getRoster();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
     tables = new HashMap<>();
-    tables.put(startingChannel, new Table(this, startingChannel));
+    tables.put(startingChannel, new Table(this, startingChannel, roster));
 
     setName(Constants.BOT_NAME);
     setAutoNickChange(true);
@@ -38,6 +46,19 @@ public class IrcBot extends PircBot implements IrcCallback {
       System.err.println("UTF-8 must be supported.");
       System.exit(1);
     }
+  }
+
+  private void getStats(String nickname, String channel) {
+    if (roster == null) {
+      sendMessage(channel, "No stats available at this time");
+      return;
+    }
+    final Stats stats = roster.getStats(nickname);
+    if (stats == null) {
+      sendMessage(channel, "No stats tracked for " + nickname);
+      return;
+    }
+    sendMessage(channel, stats.toString());
   }
 
   public void joinGameChannel(String channel, String key) {
@@ -103,6 +124,10 @@ public class IrcBot extends PircBot implements IrcCallback {
         } else {
           sendMessage(channel, "Last activity: " + activity.toString());
         }
+        break;
+      }
+      case "stats" : {
+        getStats(sender, channel);
         break;
       }
       case "clear": {
@@ -244,7 +269,7 @@ public class IrcBot extends PircBot implements IrcCallback {
           sendMessage(sender, "#" + newChannel + " already has a table.");
           break;
         }
-        tables.put(newChannel, new Table(this, newChannel));
+        tables.put(newChannel, new Table(this, newChannel, roster));
         if (split.length > 2) {
           joinChannel(newChannel, split[2]);
         } else {
