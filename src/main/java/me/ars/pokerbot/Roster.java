@@ -1,9 +1,6 @@
 package me.ars.pokerbot;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
+import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,6 +26,16 @@ public class Roster {
             }
         }
         return roster;
+    }
+
+    public void saveRoster() throws IOException {
+        final File rosterFile = new File(ROSTER_FILE);
+        if (!rosterFile.exists()) {
+            rosterFile.createNewFile();
+        }
+        try (ObjectOutputStream stream = new ObjectOutputStream(new FileOutputStream(rosterFile))) {
+            stream.writeObject(roster);
+        }
     }
 
     public void trackWin(String nickname) {

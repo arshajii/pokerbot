@@ -1,5 +1,6 @@
 package me.ars.pokerbot;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -391,6 +392,13 @@ public class Table {
     } else {
       messageChannel("Game stopped. " + winner.getName() + " is the winner!");
       roster.trackWin(winner.getName());
+    }
+
+    try {
+      roster.saveRoster();
+    } catch (IOException e) {
+      System.err.println(e.toString());
+      e.printStackTrace();
     }
   }
 
