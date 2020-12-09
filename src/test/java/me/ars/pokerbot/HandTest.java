@@ -55,6 +55,19 @@ public class HandTest {
   }
 
   @Test
+  public void testBigFullHouse() {
+    final Card card1 = new Card(14, Suit.HEARTS);
+    final Card card2 = new Card(14, Suit.SPADES);
+    final Card card3 = new Card(14, Suit.CLUBS);
+    final Card card4 = new Card(13, Suit.HEARTS);
+    final Card card5 = new Card(13, Suit.SPADES);
+    final Card card6 = new Card(13, Suit.DIAMONDS);
+    final Card card7 = new Card(6, Suit.SPADES);
+    final Hand hand = Hand.getBestHand(player, card1,card2,card3,card4,card5,card6,card7);
+    Assert.assertEquals(HandType.FULL_HOUSE, hand.getHandType());
+  }
+
+  @Test
   public void testFullHouseWithAces() {
     final Card card1 = new Card(14, Suit.HEARTS);
     final Card card2 = new Card(14, Suit.SPADES);

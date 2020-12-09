@@ -215,6 +215,7 @@ public class Hand implements Comparable<Hand> {
 		}
 
 		int threes = -1;
+		int secondthrees = -1;
 		int twos = -1;
 		int secondTwos = -1;
 
@@ -224,6 +225,8 @@ public class Hand implements Comparable<Hand> {
 			if (freq == 3) {
 				if (threes < 0) {
 					threes = value;
+				} else {
+					secondthrees = value;
 				}
 			} else if (freq == 2) {
 				if (twos < 0) {
@@ -235,15 +238,22 @@ public class Hand implements Comparable<Hand> {
 		}
 
 		// full house check
-		if (threes >= 0 && twos >= 0) {
+		if (threes >= 0 && (twos >= 0 || secondthrees >= 0)) {
 			List<Card> l1 = new ArrayList<>(5);
 			List<Card> l2 = new ArrayList<>(2);
+			final boolean firstBigger = (threes > secondthrees);
 
 			for (Card card : cards) {
 				if (card.getValue() == threes) {
-					l1.add(card);
+					if (l1.size() < 2 || firstBigger) {
+						l1.add(card);
+					}
 				} else if (card.getValue() == twos) {
 					l2.add(card);
+				} else if(card.getValue() == secondthrees) {
+					if (l2.size() < 2 || !firstBigger) {
+						l2.add(card);
+					}
 				}
 			}
 
