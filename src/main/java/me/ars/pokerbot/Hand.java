@@ -125,8 +125,8 @@ public class Hand implements Comparable<Hand> {
 				return hand2;
 			}
 		} catch (IllegalArgumentException e) {
-			System.err.println("Error making hand with ones: " + e);
-			e.printStackTrace();
+			//System.err.println("Error making hand with ones: " + e);
+			//e.printStackTrace();
 			return hand1;
 		}
 	}

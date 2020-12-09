@@ -275,4 +275,39 @@ public class HandTest {
     // compareTo would crash.
     Assert.assertEquals(-1, ahand.compareTo(hand));
   }
+
+  @Test
+  public void smokeTest() {
+    final Card[] deck = Card.getDeck();
+    final int n = deck.length;
+    for (int i = 0; i < n; i++) {
+      for (int j = i + 1; j < n; j++) {
+        for (int k = j + 1; k < n; k++) {
+          for (int l = k + 1; l < n; l++) {
+            for (int m = l + 1; m < n; m++) {
+              for (int a = m + 1; a < n; a++) {
+                for (int b = a + 1; b < n; b++) {
+                  try {
+                    Hand.getBestHand(player, deck[i], deck[j], deck[k], deck[l], deck[m], deck[a], deck[b]);
+                  } catch(Exception e) {
+                    System.out.println("Couldnt form a hand with the following cards");
+                    printCards(deck[i], deck[j], deck[k], deck[l], deck[m], deck[a], deck[b]);
+                    System.out.println("");
+                    throw(e);
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  private static void printCards(Card... cards) {
+    for(Card card: cards) {
+      System.out.print(" [" + card.getValue() + " " + card.getSuit() + "]");
+    }
+
+  }
 }
