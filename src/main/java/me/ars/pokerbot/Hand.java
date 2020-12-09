@@ -69,8 +69,9 @@ public class Hand implements Comparable<Hand> {
 
 	private Hand(final Player player, final HandType type,
 			final Card... bestHand) {
-		if (bestHand.length != 5)
-			throw new IllegalArgumentException();
+		if (bestHand.length != 5) {
+			throw new IllegalArgumentException("Invalid hand size: " + bestHand.length);
+		}
 
 		this.player = player;
 		this.type = type;
@@ -114,13 +115,19 @@ public class Hand implements Comparable<Hand> {
 	 * @param cards the 7 cards to be analyzed
 	 */
 	public static Hand getBestHand(Player player, Card... cards) {
-		Card[] acesAsOnes = countAcesAsOnes(cards);
 		final Hand hand1 = bestHand(player, cards);
-		final Hand hand2 = bestHand(player, acesAsOnes);
-		if (hand1.compareTo(hand2) > 0) {
+		try {
+			final Card[] acesAsOnes = countAcesAsOnes(cards);
+			final Hand hand2 = bestHand(player, acesAsOnes);
+			if (hand1.compareTo(hand2) > 0) {
+				return hand1;
+			} else {
+				return hand2;
+			}
+		} catch (IllegalArgumentException e) {
+			System.err.println("Error making hand with ones: " + e);
+			e.printStackTrace();
 			return hand1;
-		} else {
-			return hand2;
 		}
 	}
 

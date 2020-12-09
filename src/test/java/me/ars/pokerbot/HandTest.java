@@ -55,6 +55,17 @@ public class HandTest {
   }
 
   @Test
+  public void testFullHouseWithAces() {
+    final Card card1 = new Card(14, Suit.HEARTS);
+    final Card card2 = new Card(14, Suit.SPADES);
+    final Card card3 = new Card(14, Suit.CLUBS);
+    final Card card4 = new Card(7, Suit.HEARTS);
+    final Card card5 = new Card(7, Suit.SPADES);
+    final Hand hand = Hand.getBestHand(player, card1,card2,card3,card4,card5);
+    Assert.assertEquals(HandType.FULL_HOUSE, hand.getHandType());
+  }
+
+  @Test
   public void testOnePair() {
     final Card card1 = new Card(10, Suit.HEARTS);
     final Card card2 = new Card(10, Suit.SPADES);
@@ -73,6 +84,32 @@ public class HandTest {
     final Card card4 = new Card(12, Suit.HEARTS);
     final Card card5 = new Card(7, Suit.HEARTS);
     final Hand hand = Hand.getBestHand(player, card1,card2,card3,card4,card5);
+    Assert.assertEquals(HandType.TWO_PAIR, hand.getHandType());
+  }
+
+  @Test
+  public void testTwoPairAcesAndKings() {
+    final Card card1 = new Card(14, Suit.HEARTS);
+    final Card card2 = new Card(14, Suit.SPADES);
+    final Card card3 = new Card(13, Suit.CLUBS);
+    final Card card4 = new Card(13, Suit.HEARTS);
+    final Card card5 = new Card(7, Suit.HEARTS);
+    final Card card6 = new Card(2, Suit.SPADES);
+    final Card card7 = new Card(5, Suit.CLUBS);
+    final Hand hand = Hand.getBestHand(player, card1,card2,card3,card4,card5,card6,card7);
+    Assert.assertEquals(HandType.TWO_PAIR, hand.getHandType());
+  }
+
+  @Test
+  public void testTwoPairAcesAndTwos() {
+    final Card card1 = new Card(14, Suit.HEARTS);
+    final Card card2 = new Card(14, Suit.SPADES);
+    final Card card3 = new Card(2, Suit.CLUBS);
+    final Card card4 = new Card(2, Suit.HEARTS);
+    final Card card5 = new Card(7, Suit.HEARTS);
+    final Card card6 = new Card(10, Suit.SPADES);
+    final Card card7 = new Card(5, Suit.CLUBS);
+    final Hand hand = Hand.getBestHand(player, card1,card2,card3,card4,card5,card6,card7);
     Assert.assertEquals(HandType.TWO_PAIR, hand.getHandType());
   }
 
@@ -187,5 +224,42 @@ public class HandTest {
 
     // compareTo would crash.
     Assert.assertEquals(0, ahand.compareTo(hand));
+  }
+
+  @Test
+  public void testTwoPairComparisonCrash() {
+    /* This crash happened during play.
+    607507385567 ### java.lang.IllegalArgumentException
+    1607507385572 ###       at me.ars.pokerbot.Hand.<init>(Hand.java:73)
+    1607507385572 ###       at me.ars.pokerbot.Hand.<init>(Hand.java:82)
+    1607507385572 ###       at me.ars.pokerbot.Hand.bestHand(Hand.java:359)
+    1607507385572 ###       at me.ars.pokerbot.Hand.getBestHand(Hand.java:119)
+    1607507385572 ###       at me.ars.pokerbot.Table.nextTurn(Table.java:281)
+    1607507385572 ###       at me.ars.pokerbot.Table.call(Table.java:73)
+    1607507385572 ###       at me.ars.pokerbot.IrcBot.onMessage(IrcBot.java:170)
+    1607507385578 ###       at org.jibble.pircbot.PircBot.handleLine(PircBot.java:1017)
+    1607507385578 ###       at org.jibble.pircbot.InputThread.run(InputThread.java:92)
+    */
+    final Card card1 = new Card(2, Suit.DIAMONDS);
+    final Card card2 = new Card(14, Suit.SPADES);
+    final Card card3 = new Card(13, Suit.HEARTS);
+    final Card card4 = new Card(11, Suit.DIAMONDS);
+    final Card card5 = new Card(2, Suit.HEARTS);
+    final Card card6 = new Card(12, Suit.CLUBS);
+    final Card card7 = new Card(13, Suit.CLUBS);
+    final Hand hand = Hand.getBestHand(player, card1, card2, card3, card4, card5, card6, card7);
+    Assert.assertEquals(HandType.TWO_PAIR, hand.getHandType());
+    final Card acard1 = new Card(2, Suit.DIAMONDS);
+    final Card acard2 = new Card(14, Suit.SPADES);
+    final Card acard3 = new Card(13, Suit.HEARTS);
+    final Card acard4 = new Card(11, Suit.DIAMONDS);
+    final Card acard5 = new Card(2, Suit.HEARTS);
+    final Card acard6 = new Card(7, Suit.SPADES);
+    final Card acard7 = new Card(7, Suit.DIAMONDS);
+    final Hand ahand = Hand.getBestHand(player, acard1, acard2, acard3, acard4, acard5, acard6, acard7);
+    Assert.assertEquals(HandType.TWO_PAIR, hand.getHandType());
+
+    // compareTo would crash.
+    Assert.assertEquals(-1, ahand.compareTo(hand));
   }
 }
