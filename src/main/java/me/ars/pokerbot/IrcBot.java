@@ -114,12 +114,20 @@ public class IrcBot extends PircBot implements IrcCallback {
           break;
         }
 
-        sendMessage(
-            channel,
-            "Joined players: "
-                + players.stream().map(Player::getName)
-                .collect(Collectors.joining(", ")) + ".");
-
+        if (table.isGameInProgress()) {
+          sendMessage(
+                  channel,
+                  "Now playing: "
+                          + players.stream().map(player ->
+                          player.getName() + " $" + player.getMoney())
+                          .collect(Collectors.joining(", ")) + ".");
+        } else {
+          sendMessage(
+                  channel,
+                  "Joined players: "
+                          + players.stream().map(Player::getName)
+                          .collect(Collectors.joining(", ")) + ".");
+        }
         break;
       }
       case "buyin": {
