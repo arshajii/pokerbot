@@ -257,8 +257,14 @@ public class Table {
     deck.addAll(rawDeck);
     table.clear();
     turnIndex = startPlayer;
-    lastIndex = lastUnfolded(startPlayer - 1);
-    startPlayer = wrappedIncrement(startPlayer);
+    try {
+      lastIndex = lastUnfolded(startPlayer - 1);
+      startPlayer = wrappedIncrement(startPlayer);
+    } catch (IndexOutOfBoundsException e) {
+      System.err.println(e.toString());
+      e.printStackTrace();
+      startPlayer = 0;
+    }
     pot = 0;
     raise = Constants.ANTE;
     // TODO: Blinds
