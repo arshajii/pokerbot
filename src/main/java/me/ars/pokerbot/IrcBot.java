@@ -103,6 +103,10 @@ public class IrcBot extends PircBot implements IrcCallback {
         table.unjoin(sender);
         break;
       }
+      case "current": {
+        table.showCurrent();
+        break;
+      }
       case "players": {
         final List<Player> players = table.getPlayers();
         if (players.isEmpty()) {

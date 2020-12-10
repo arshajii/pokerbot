@@ -62,10 +62,10 @@ public class Table {
     int bet;
 
     if (money >= owed) {
-      messageChannel("You called! (" + moneyString(owed) + ")");
+      messageChannel(nick + " called! (" + moneyString(owed) + ")");
       bet = owed;
     } else {
-      messageChannel("You called! (" + moneyString(money) + " of " + moneyString(owed) + ")");
+      messageChannel(nick + " called! (" + moneyString(money) + " of " + moneyString(owed) + ")");
       bet = money;
     }
 
@@ -81,6 +81,17 @@ public class Table {
     return players;
   }
 
+  public void showCurrent() {
+    if (!gameInProgress) {
+      messageChannel("Not currently playing.");
+      return;
+    }
+    final String tableStr = table.isEmpty() ? "no cards" : table.stream()
+        .map(Card::toString).collect(Collectors.joining(", "));
+    final String currentPlayer = players.get(turnIndex).getName();
+    messageChannel("On the table: " + tableStr + " || In the pot: " + moneyString(pot) + " || Current player: " + currentPlayer);
+  }
+
   /**
    * Incoming check from [player]
    */
@@ -90,7 +101,6 @@ public class Table {
     setActivity();
 
     if (player.getAmountPayed() >= raise) {
-      messageChannel(player.getName() + " checked!");
       nextTurn();
     } else {
       messageChannel(player.getName() + " must at least call last raise (" + moneyString(amountOwed(player)) + ").");
@@ -148,7 +158,7 @@ public class Table {
     if (!verifyCurrentPlayer(player)) return;
     setActivity();
     player.fold();
-    messageChannel(player.getName() + " folds.");
+    //messageChannel(player.getName() + " folds.");
     final boolean nextTurn = !checkForWinByFold();
     if (nextTurn) {
       nextTurn();
