@@ -223,6 +223,14 @@ public class Table {
         roster.trackGame(name);
       }
     }
+
+    try {
+      roster.saveRoster();
+    } catch (IOException e) {
+      System.err.println(e.toString());
+      e.printStackTrace();
+    }
+
     buyInPlayers.clear();
 
     final Iterator<Player> playerIter = players.iterator();

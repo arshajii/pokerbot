@@ -174,6 +174,7 @@ public class IrcBot extends PircBot implements IrcCallback {
         table.call(sender);
         break;
       }
+      case "c":
       case "czech":
       case "check": {
         if (!table.isGameInProgress()) {
@@ -210,7 +211,11 @@ public class IrcBot extends PircBot implements IrcCallback {
           break;
         }
 
-        table.raise(sender, newRaise);
+        if (newRaise == 1) {
+          table.call(sender);
+        } else {
+          table.raise(sender, newRaise);
+        }
 
         break;
       }
