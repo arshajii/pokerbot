@@ -187,17 +187,32 @@ public class Table {
     return null;
   }
 
-  /**
-   * Adds a player to the table
-   *
-   * @return True if the player was added
-   */
-  public boolean registerPlayer(String name) {
+  public void registerPlayer(String name) {
     if (gameInProgress) {
-      return false;
+      messageChannel("A game is already in progress! Use the buyin command if you still want to join");
+      return;
     }
+    addPlayer(name, true);
+  }
 
-    return players.add(new Player(name));
+  private boolean addPlayer(String name, boolean verbose) {
+    for(Player player: players) {
+      if (player.getName().equals(name)) {
+        if (verbose) {
+          messageChannel(name + " has already joined.");
+        }
+        return false;
+      }
+    }
+    final boolean added = players.add(new Player(name));
+    if (verbose) {
+      if (added) {
+        messageChannel(name + " has joined the game.");
+      } else {
+        messageChannel("Could not add " + name + " to the game");
+      }
+    }
+    return added;
   }
 
   private void deal() {
@@ -219,7 +234,7 @@ public class Table {
 
     if (!buyInPlayers.isEmpty()) {
       for (String name : buyInPlayers) {
-        players.add(new Player(name));
+        addPlayer(name, false);
         roster.trackGame(name);
       }
     }

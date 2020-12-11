@@ -90,13 +90,7 @@ public class IrcBot extends PircBot implements IrcCallback {
         break;
       }
       case "join": {
-        final boolean success = table.registerPlayer(sender);
-
-        if (success) {
-          sendReply(channel, sender, "You have now joined! Please wait for the game to start.");
-        } else {
-          sendReply(channel, sender, "Could not join. A game is already in progress.");
-        }
+        table.registerPlayer(sender);
         break;
       }
       case "unjoin": {
