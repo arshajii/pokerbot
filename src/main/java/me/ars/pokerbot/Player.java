@@ -12,9 +12,18 @@ public class Player {
 	private Card card1, card2;
 	private boolean active = true;
 	private boolean folded = false;
+	private boolean isAllIn = false;
 
 	public Player(String name) {
 		this.name = name;
+	}
+
+	public boolean isAllIn() {
+		return isAllIn;
+	}
+
+	public void setAllIn(boolean allIn) {
+		isAllIn = allIn;
 	}
 
 	public String getName() {

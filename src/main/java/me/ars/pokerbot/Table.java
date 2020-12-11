@@ -142,6 +142,7 @@ public class Table {
     final int money = player.getMoney();
 
     messageChannel(player.getName() + " goes all in!");
+    player.setAllIn(true);
 
     if (money > owed) {
       raise(nick, money - owed);
@@ -226,6 +227,7 @@ public class Table {
 
   private void setupHand() {
     for (Player player : players) {
+      player.setAllIn(false);
       if (player.isBroke()) {
         player.cashout();
         roster.modifyMoney(player.getName(), -Constants.START_MONEY);
@@ -306,8 +308,7 @@ public class Table {
 
   private void nextTurn() {
     final Player player = players.get(turnIndex);
-    if (turnIndex == lastIndex && (player.isFolded() || player.isBroke() ||
-        amountOwed(player) == 0)) {
+    if (turnIndex == lastIndex && (player.isFolded() || player.isBroke() || amountOwed(player) == 0)) {
 
       if (table.size() == 5) {
         // winner selection
@@ -384,7 +385,12 @@ public class Table {
       turnIndex = wrappedIncrement(turnIndex);
     } while ((nextPlayer = players.get(turnIndex)).isFolded());
 
-    sendStatus(nextPlayer.getName());
+    if (nextPlayer.isAllIn()) {
+      messageChannel(nextPlayer.getName() + " is all-in, next player...");
+      nextTurn();
+    } else {
+      sendStatus(nextPlayer.getName());
+    }
   }
 
   private void sendStatus(String turn) {
