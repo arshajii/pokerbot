@@ -83,8 +83,9 @@ public class IrcBot extends PircBot implements IrcCallback {
 
     final String[] split = SPACES.split(message);
     final Table table = tables.get(channel);
+    final String command = split[0].substring(1).toLowerCase();
 
-    switch (split[0].substring(1)) {
+    switch (command) {
       case "ping": {
         sendMessage(channel, Colors.BOLD + sender + Colors.NORMAL + ": " + message);
         break;
