@@ -277,6 +277,24 @@ public class HandTest {
   }
 
   @Test
+  public void testCompareTwoPair() {
+    final Card card1 = new Card(12, Suit.SPADES);
+    final Card card2 = new Card(14, Suit.CLUBS);
+    final Card card3 = new Card(10, Suit.DIAMONDS);
+    final Card card4 = new Card(6, Suit.SPADES);
+    final Card card5 = new Card(6, Suit.DIAMONDS);
+    final Card cardA = new Card(12, Suit.CLUBS);
+    final Card cardB = new Card(10, Suit.HEARTS);
+    final Card cardC = new Card(11, Suit.DIAMONDS);
+    final Card cardD = new Card(12, Suit.DIAMONDS);
+    final Hand hand = Hand.getBestHand(player, card1, card2, card3, card4, card5, cardA, cardB);
+    Assert.assertEquals(HandType.TWO_PAIR, hand.getHandType());
+    final Hand hand2 = Hand.getBestHand(player, card1, card2, card3, card4, card5, cardC, cardD);
+    Assert.assertEquals(HandType.TWO_PAIR, hand2.getHandType());
+    Assert.assertEquals(-1, hand2.compareTo(hand));
+  }
+
+  @Test
   public void smokeTest() {
     final Card[] deck = Card.getDeck();
     final int n = deck.length;

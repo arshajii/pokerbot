@@ -2,6 +2,7 @@ package me.ars.pokerbot;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -218,6 +219,7 @@ public class Hand implements Comparable<Hand> {
 		int secondthrees = -1;
 		int twos = -1;
 		int secondTwos = -1;
+		int thirdTwos = -1;
 
 		for (int i = freqs.length - 1; i >= 0; i--) {
 			final int freq = freqs[i];
@@ -231,10 +233,23 @@ public class Hand implements Comparable<Hand> {
 			} else if (freq == 2) {
 				if (twos < 0) {
 					twos = value;
-				} else {
+				} else if (secondTwos < 0){
 					secondTwos = value;
+				} else {
+					thirdTwos = value;
 				}
 			}
+		}
+
+		if(thirdTwos != -1) {
+			// get the best two pairs
+			final int[] arrDesc = Arrays.stream(new int[]{twos, secondTwos, thirdTwos}).boxed()
+					.sorted(Collections.reverseOrder())
+					.mapToInt(Integer::intValue)
+					.toArray();
+
+			twos = arrDesc[0];
+			secondTwos = arrDesc[1];
 		}
 
 		// full house check
