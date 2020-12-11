@@ -6,6 +6,9 @@ import org.junit.Assert;
 import me.ars.pokerbot.Card.Suit;
 import me.ars.pokerbot.Hand.HandType;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class HandTest {
 
   private final Player player = new Player("tester");
@@ -292,6 +295,38 @@ public class HandTest {
     final Hand hand2 = Hand.getBestHand(player, card1, card2, card3, card4, card5, cardC, cardD);
     Assert.assertEquals(HandType.TWO_PAIR, hand2.getHandType());
     Assert.assertEquals(-1, hand2.compareTo(hand));
+  }
+
+  @Test
+  public void weirdPairTest() {
+    /*
+    Following bug came up during play: Presented winning hand is displayed the wrong way
+    16:15 < Poker> On the table: 8♥, Q♥, 3♦, A♦, J♦ || In the pot: $20
+    16:15 < Poker> Reveal: [player1 - 6♣, 2♥] [player2 - 2♣, 2♠]
+    16:15 < Poker> player2 wins with the hand 3♦, Q♥, J♦, 8♥, 2♠ (one pair)!
+     */
+    final Card card1 = new Card(8, Suit.HEARTS);
+    final Card card2 = new Card(12, Suit.DIAMONDS);
+    final Card card3 = new Card(3, Suit.DIAMONDS);
+    final Card card4 = new Card(14, Suit.DIAMONDS);
+    final Card card5 = new Card(11, Suit.DIAMONDS);
+    final Card cardA = new Card(6, Suit.CLUBS);
+    final Card cardB = new Card(2, Suit.HEARTS);
+    final Card cardC = new Card(2, Suit.CLUBS);
+    final Card cardD = new Card(2, Suit.SPADES);
+    final Hand hand = Hand.getBestHand(player, card1, card2, card3, card4, card5, cardA, cardB);
+    Assert.assertEquals(HandType.HIGH_CARD, hand.getHandType());
+    final Hand hand2 = Hand.getBestHand(player, card1, card2, card3, card4, card5, cardC, cardD);
+    Assert.assertEquals(HandType.ONE_PAIR, hand2.getHandType());
+    Assert.assertEquals(1, hand2.compareTo(hand));
+    final List<Card> supposedCards = new ArrayList<>();
+    supposedCards.add(cardD);
+    supposedCards.add(cardC);
+    supposedCards.add(card4);
+    supposedCards.add(card2);
+    supposedCards.add(card5);
+    final Hand referenceHand = new Hand(player, HandType.ONE_PAIR, supposedCards);
+    Assert.assertEquals(referenceHand, hand2);
   }
 
   @Test

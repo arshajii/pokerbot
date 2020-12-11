@@ -79,7 +79,7 @@ public class Hand implements Comparable<Hand> {
 		this.bestHand = bestHand;
 	}
 
-	private Hand(final Player player, final HandType type,
+	Hand(final Player player, final HandType type,
 			final List<Card> bestHandList) {
 		this(player, type, bestHandList.toArray(new Card[bestHandList.size()]));
 	}
