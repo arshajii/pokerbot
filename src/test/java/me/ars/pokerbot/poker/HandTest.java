@@ -1,10 +1,10 @@
-package me.ars.pokerbot;
+package me.ars.pokerbot.poker;
 
 import org.junit.Test;
 import org.junit.Assert;
 
-import me.ars.pokerbot.Card.Suit;
-import me.ars.pokerbot.Hand.HandType;
+import me.ars.pokerbot.poker.Card.Suit;
+import me.ars.pokerbot.poker.Hand.HandType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -205,16 +205,16 @@ public class HandTest {
   public void testHighCardComparisonCrash() {
     /* This crash happened during play.
     1607432240313 ### java.lang.IllegalStateException
-    1607432240313 ###       at me.ars.pokerbot.Hand.compareTo(Hand.java:464)
-    1607432240313 ###       at me.ars.pokerbot.Hand.compareTo(Hand.java:10)
+    1607432240313 ###       at me.ars.pokerbot.poker.Hand.compareTo(Hand.java:464)
+    1607432240313 ###       at me.ars.pokerbot.poker.Hand.compareTo(Hand.java:10)
     1607432240313 ###       at java.util.Collections$ReverseComparator.compare(Collections.java:5117)
     1607432240313 ###       at java.util.Collections$ReverseComparator.compare(Collections.java:5108)
     1607432240313 ###       at java.util.TimSort.countRunAndMakeAscending(TimSort.java:355)
     1607432240313 ###       at java.util.TimSort.sort(TimSort.java:220)
     1607432240313 ###       at java.util.Arrays.sort(Arrays.java:1512)
     1607432240313 ###       at java.util.ArrayList.sort(ArrayList.java:1462)
-    1607432240313 ###       at me.ars.pokerbot.Table.nextTurn(Table.java:284)
-    1607432240314 ###       at me.ars.pokerbot.Table.check(Table.java:94)
+    1607432240313 ###       at me.ars.pokerbot.poker.Table.nextTurn(Table.java:284)
+    1607432240314 ###       at me.ars.pokerbot.poker.Table.check(Table.java:94)
     1607432240314 ###       at me.ars.pokerbot.IrcBot.onMessage(IrcBot.java:179)
     1607432240314 ###       at org.jibble.pircbot.PircBot.handleLine(PircBot.java:1017)
     1607432240314 ###       at org.jibble.pircbot.InputThread.run(InputThread.java:92)
@@ -246,12 +246,12 @@ public class HandTest {
   public void testTwoPairComparisonCrash() {
     /* This crash happened during play.
     607507385567 ### java.lang.IllegalArgumentException
-    1607507385572 ###       at me.ars.pokerbot.Hand.<init>(Hand.java:73)
-    1607507385572 ###       at me.ars.pokerbot.Hand.<init>(Hand.java:82)
-    1607507385572 ###       at me.ars.pokerbot.Hand.bestHand(Hand.java:359)
-    1607507385572 ###       at me.ars.pokerbot.Hand.getBestHand(Hand.java:119)
-    1607507385572 ###       at me.ars.pokerbot.Table.nextTurn(Table.java:281)
-    1607507385572 ###       at me.ars.pokerbot.Table.call(Table.java:73)
+    1607507385572 ###       at me.ars.pokerbot.poker.Hand.<init>(Hand.java:73)
+    1607507385572 ###       at me.ars.pokerbot.poker.Hand.<init>(Hand.java:82)
+    1607507385572 ###       at me.ars.pokerbot.poker.Hand.bestHand(Hand.java:359)
+    1607507385572 ###       at me.ars.pokerbot.poker.Hand.getBestHand(Hand.java:119)
+    1607507385572 ###       at me.ars.pokerbot.poker.Table.nextTurn(Table.java:281)
+    1607507385572 ###       at me.ars.pokerbot.poker.Table.call(Table.java:73)
     1607507385572 ###       at me.ars.pokerbot.IrcBot.onMessage(IrcBot.java:170)
     1607507385578 ###       at org.jibble.pircbot.PircBot.handleLine(PircBot.java:1017)
     1607507385578 ###       at org.jibble.pircbot.InputThread.run(InputThread.java:92)

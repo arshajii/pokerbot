@@ -1,4 +1,4 @@
-package me.ars.pokerbot;
+package me.ars.pokerbot.poker;
 
 import java.util.Arrays;
 

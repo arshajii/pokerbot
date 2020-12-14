@@ -1,16 +1,19 @@
 package me.ars.pokerbot;
 
+import me.ars.pokerbot.poker.*;
+import me.ars.pokerbot.stats.Roster;
+import me.ars.pokerbot.stats.Stats;
 import org.jibble.pircbot.Colors;
 import org.jibble.pircbot.PircBot;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.text.SimpleDateFormat;
 
-public class IrcBot extends PircBot implements IrcCallback {
+public class IrcBot extends PircBot {
 
   /*
    * pattern representing one or more contiguous whitespace characters, used
@@ -18,14 +21,12 @@ public class IrcBot extends PircBot implements IrcCallback {
    */
   private static final Pattern SPACES = Pattern.compile("\\s+");
   private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy MMM dd HH:mm:ss");
-  private Map<String, Table> tables;
-
-  private Roster roster;
-
+  private final Map<String, Table> tables;
   /*
    * set of administrators by hostname
    */
-  private Set<String> admins = new HashSet<>();
+  private final Set<String> admins = new HashSet<>();
+  private Roster roster;
 
   public IrcBot(String startingChannel) {
     try {
@@ -34,7 +35,8 @@ public class IrcBot extends PircBot implements IrcCallback {
       e.printStackTrace();
     }
     tables = new HashMap<>();
-    tables.put(startingChannel, new Table(this, startingChannel, roster));
+    final IrcStateCallback startingCallback = new IrcStateCallback(startingChannel);
+    tables.put(startingChannel, new Table(startingCallback, roster));
 
     setName(Constants.BOT_NAME);
     setAutoNickChange(true);
@@ -288,7 +290,8 @@ public class IrcBot extends PircBot implements IrcCallback {
           sendMessage(sender, "#" + newChannel + " already has a table.");
           break;
         }
-        tables.put(newChannel, new Table(this, newChannel, roster));
+        final IrcStateCallback callback = new IrcStateCallback(newChannel);
+        tables.put(newChannel, new Table(callback, roster));
         if (split.length > 2) {
           joinChannel(newChannel, split[2]);
         } else {
@@ -313,18 +316,130 @@ public class IrcBot extends PircBot implements IrcCallback {
     admins.add(hostname);
   }
 
-
   protected void sendReply(String target, String name, String message) {
     sendMessage(target, Colors.BOLD + name + Colors.NORMAL + ": " + message);
   }
 
-  @Override
-  public void messageChannel(String channel, String message) {
-    sendMessage(channel, message);
-  }
+  private class IrcStateCallback implements StateCallback {
 
-  @Override
-  public void messagePlayer(Player player, String message) {
-    sendMessage(player.getName(), message);
+    private final String channel;
+
+    public IrcStateCallback(String channel) {
+      this.channel = channel;
+    }
+
+    private String moneyString(int amount) {
+      return Colors.BOLD + Colors.DARK_GREEN + "$" + amount + Colors.NORMAL;
+    }
+
+    private String renderCard(Card card) {
+      // Todo: IRC-isms should be introduced here
+      return card.toString();
+    }
+
+    private String renderHand(Hand hand) {
+      // Todo: IRC-isms should be introduced here
+      return hand.toString();
+    }
+
+    @Override
+    public void playerCalled(String nick, int money, int owed) {
+      if (money >= owed) {
+        sendMessage(channel, nick + " called! (" + moneyString(owed) + ")");
+      } else {
+        sendMessage(channel, nick + " called! (" + moneyString(money) + " of " + moneyString(owed) + ")");
+      }
+    }
+
+    @Override
+    public void playerRaised(String name, int newRaise) {
+      sendMessage(channel, name + " raised " + moneyString(newRaise) + ".");
+    }
+
+    @Override
+    public void playerChecked(String name) {
+      // Too verbose. Skip
+    }
+
+    @Override
+    public void announce(String message) {
+      sendMessage(channel, message);
+    }
+
+    @Override
+    public void updateTable(List<Card> table, int pot, String currentPlayer) {
+      final String tableStr = table.isEmpty() ? "no cards" : table.stream()
+              .map(Card::toString).collect(Collectors.joining(", "));
+      sendMessage(channel, "On the table: " + tableStr + " || In the pot: " + moneyString(pot) + " || Current player: " + currentPlayer);
+    }
+
+    @Override
+    public void mustCallRaise(String name, int amountOwed) {
+      sendMessage(channel, name + " must at least call last raise (" + moneyString(amountOwed) + ").");
+    }
+
+    @Override
+    public void playerCannotRaise(String name, int needed, int money) {
+      sendMessage(channel, name + " doesn't have enough money. They need " + moneyString(needed) + " but only have " + moneyString(money) + ".");
+    }
+
+    @Override
+    public void playerAllin(String name) {
+      sendMessage(channel, name + " goes all in!");
+    }
+
+    @Override
+    public void playerFolded(String name) {
+      // Too verbose. Skip.
+    }
+
+    @Override
+    public void playerCashedOut(String name, int money) {
+      sendMessage(channel, name + " cashed out with " + moneyString(money) + "!");
+    }
+
+    @Override
+    public void showPlayerCards(String name, Card card1, Card card2) {
+      sendMessage(name, "[#" + channel + "] Your cards: " + renderCard(card1) + ", " + renderCard(card2));
+    }
+
+    @Override
+    public void showPlayers(Map<String, Integer> players) {
+      sendMessage(channel, players.keySet().stream()
+              .map(player -> "[" + player + " - " + moneyString(players.get(player)) + "]")
+              .collect(Collectors.joining(" ")));
+    }
+
+    @Override
+    public void revealPlayers(Map<String, List<Card>> reveal) {
+      sendMessage(channel, reveal.keySet().stream()
+              .map(player -> "[" + player + " - " +
+                      renderCard(reveal.get(player).get(0)) + ", " +
+                      renderCard(reveal.get(player).get(1)) + "]")
+              .collect(Collectors.joining(" ")));
+    }
+
+    @Override
+    public void declareWinner(String name, Hand winningHand, int pot) {
+      sendMessage(channel, name + " wins " + moneyString(pot) + " with the hand " + renderHand(winningHand) + "!");
+    }
+
+    @Override
+    public void declareSplitPot(List<String> winners, Hand.HandType handType, int pot) {
+      sendMessage(channel,
+              "Split pot between "
+                      + String.join(", ", winners)
+                      + " (each with a " + handType + ").");
+    }
+
+    @Override
+    public void declarePlayerTurn(String player) {
+      sendMessage(channel, player + "'s turn!");
+    }
+
+    @Override
+    public void collectAnte(int ante) {
+      sendMessage(channel, "Collecting a " + moneyString(Constants.ANTE) + " ante from each player...");
+    }
   }
 }

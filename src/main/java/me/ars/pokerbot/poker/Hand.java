@@ -1,4 +1,4 @@
-package me.ars.pokerbot;
+package me.ars.pokerbot.poker;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 import org.jibble.pircbot.Colors;
 
 public class Hand implements Comparable<Hand> {
-	enum HandType {
+	public enum HandType {
 		// the order of these matters:
 		HIGH_CARD, ONE_PAIR, TWO_PAIR, THREE_OF_KIND, STRAIGHT, FLUSH, FULL_HOUSE, FOUR_OF_KIND, STRAIGHT_FLUSH;
 

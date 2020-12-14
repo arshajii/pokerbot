@@ -1,13 +1,14 @@
-package me.ars.pokerbot;
+package me.ars.pokerbot.poker;
+
+import me.ars.pokerbot.Constants;
+import me.ars.pokerbot.stats.Roster;
 
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class Table {
-
-  private final String channel;
-  private final IrcCallback irc;
+  private final StateCallback callback;
   private final List<Player> players = new ArrayList<>();
   private final Queue<Card> deck = new ArrayDeque<>(52);
   private final List<Card> table = new ArrayList<>(5);
@@ -22,23 +23,14 @@ public class Table {
   private int pot;
   private int raise;
 
-  public Table(IrcCallback irc, String channel, Roster roster) {
-    this.irc = irc;
-    this.channel = channel;
+  public Table(StateCallback callback, Roster roster) {
+    this.callback = callback;
     this.roster = roster;
   }
 
   private boolean verifyCurrentPlayer(Player player) {
     if (player == null) return false;
     return (player.equals(players.get(turnIndex)));
-  }
-
-  private void messageChannel(String message) {
-    irc.messageChannel(channel, message);
-  }
-
-  private void messagePlayer(Player player, String message) {
-    irc.messagePlayer(player, "[" + channel + "] " + message);
   }
 
   public Calendar getLastActivity() {
@@ -59,15 +51,10 @@ public class Table {
 
     final int owed = amountOwed(player);
     final int money = player.getMoney();
-    int bet;
+    final int bet;
 
-    if (money >= owed) {
-      messageChannel(nick + " called! (" + moneyString(owed) + ")");
-      bet = owed;
-    } else {
-      messageChannel(nick + " called! (" + moneyString(money) + " of " + moneyString(owed) + ")");
-      bet = money;
-    }
+    callback.playerCalled(nick, money, owed);
+    bet = Math.min(money, owed);
 
     pot += player.bet(bet);
     nextTurn();
@@ -83,13 +70,11 @@ public class Table {
 
   public void showCurrent() {
     if (!gameInProgress) {
-      messageChannel("Not currently playing.");
+      callback.announce("Not currently playing.");
       return;
     }
-    final String tableStr = table.isEmpty() ? "no cards" : table.stream()
-        .map(Card::toString).collect(Collectors.joining(", "));
     final String currentPlayer = players.get(turnIndex).getName();
-    messageChannel("On the table: " + tableStr + " || In the pot: " + moneyString(pot) + " || Current player: " + currentPlayer);
+    callback.updateTable(table, pot, currentPlayer);
   }
 
   /**
@@ -100,10 +85,11 @@ public class Table {
     if (!verifyCurrentPlayer(player)) return;
     setActivity();
 
+    callback.playerChecked(nick);
     if (player.getAmountPayed() >= raise) {
       nextTurn();
     } else {
-      messageChannel(player.getName() + " must at least call last raise (" + moneyString(amountOwed(player)) + ").");
+      callback.mustCallRaise(player.getName(), amountOwed(player));
     }
   }
 
@@ -122,12 +108,11 @@ public class Table {
       pot += player.bet(totalBet);
       raise += newRaise;
 
-      messageChannel(player.getName() + " raised " + moneyString(newRaise) + ".");
-
+      callback.playerRaised(player.getName(), newRaise);
       lastIndex = lastUnfolded(turnIndex - 1);
       nextTurn();
     } else {
-      messageChannel(player.getName() + " doesn't have enough money. They need " + moneyString(totalBet) + " but only have " + moneyString(money) + ".");
+      callback.playerCannotRaise(player.getName(), totalBet, money);
     }
   }
 
@@ -141,7 +126,7 @@ public class Table {
     final int owed = amountOwed(player);
     final int money = player.getMoney();
 
-    messageChannel(player.getName() + " goes all in!");
+    callback.playerAllin(player.getName());
     player.setAllIn(true);
 
     if (money > owed) {
@@ -159,7 +144,7 @@ public class Table {
     if (!verifyCurrentPlayer(player)) return;
     setActivity();
     player.fold();
-    //messageChannel(player.getName() + " folds.");
+    callback.playerFolded(player.getName());
     final boolean nextTurn = !checkForWinByFold();
     if (nextTurn) {
       nextTurn();
@@ -171,7 +156,7 @@ public class Table {
     if (!verifyCurrentPlayer(player)) return;
     setActivity();
     player.cashout();
-    messageChannel(player.getName() + " cashed out with " + moneyString(player.getMoney()) + "!");
+    callback.playerCashedOut(player.getName(), player.getMoney());
     roster.modifyMoney(player.getName(), player.getMoney() - Constants.START_MONEY);
     final boolean nextTurn = !checkForWinByFold();
     if (nextTurn) {
@@ -190,7 +175,7 @@ public class Table {
 
   public void registerPlayer(String name) {
     if (gameInProgress) {
-      messageChannel("A game is already in progress! Use the buyin command if you still want to join");
+      callback.announce("A game is already in progress! Use the buyin command if you still want to join");
       return;
     }
     addPlayer(name, true);
@@ -200,7 +185,7 @@ public class Table {
     for(Player player: players) {
       if (player.getName().equals(name)) {
         if (verbose) {
-          messageChannel(name + " has already joined.");
+          callback.announce(name + " has already joined.");
         }
         return false;
       }
@@ -208,9 +193,9 @@ public class Table {
     final boolean added = players.add(new Player(name));
     if (verbose) {
       if (added) {
-        messageChannel(name + " has joined the game.");
+        callback.announce(name + " has joined the game.");
       } else {
-        messageChannel("Could not add " + name + " to the game");
+        callback.announce("Could not add " + name + " to the game");
       }
     }
     return added;
@@ -220,7 +205,7 @@ public class Table {
     for (Player player : players) {
       final Card card1 = deck.poll();
       final Card card2 = deck.poll();
-      messagePlayer(player, "Your cards: " + card1 + ", " + card2);
+      callback.showPlayerCards(player.getName(), card1, card2);
       player.receiveCards(card1, card2);
     }
   }
@@ -265,12 +250,12 @@ public class Table {
     }
 
     if (players.size() < 2) {
-      messageChannel("Not enough players left to continue: game ended.");
+      callback.announce("Not enough players left to continue: game ended.");
       stopGame();
       return;
     }
 
-    messageChannel("Starting new hand...");
+    callback.announce("Starting new hand...");
 
     for (Player player : players) {
       player.newHand();
@@ -294,13 +279,7 @@ public class Table {
     raise = Constants.ANTE;
     // TODO: Blinds
 
-    messageChannel(
-        players.stream()
-            .map(p -> "[" + p.getName()
-                + " - "
-                + moneyString(p.getMoney()) + "]")
-            .collect(Collectors.joining(" ")));
-
+    callback.showPlayers(players.stream().collect(Collectors.toMap(Player::getName, Player::getMoney)));
     deal();
     collectAntes();
     sendStatus(players.get(turnIndex).getName());
@@ -342,29 +321,26 @@ public class Table {
           if (!next.getPlayer().isFolded())
             winners.add(next);
         }
+        final Map<String, List<Card>> reveal = new HashMap<>();
+        for(Player p: players) {
+          if (!p.isFolded()) {
+            final List<Card> cards = new ArrayList<>();
+            cards.add(p.getCard1());
+            cards.add( p.getCard2());
+            reveal.put(p.getName(), cards);
+          }
+        }
 
-        messageChannel(
-            "Reveal: "
-                + players
-                .stream()
-                .filter(p -> !p.isFolded())
-                .map(p -> "[" + p.getName() + " - " + p.getCard1() + ", " + p.getCard2() + "]")
-                .collect(Collectors.joining(" ")));
+        callback.revealPlayers(reveal);
 
         int numWinners = winners.size();
 
         if (numWinners == 1) {
-          messageChannel(winner1.getName() + " wins with the hand " + winningHand + "!");
+          callback.declareWinner(winner1.getName(), winningHand, pot);
           winner1.win(pot);
         } else {
-          messageChannel(
-              "Split pot between "
-                  + winners.stream().map(Hand::getPlayer)
-                  .map(Player::getName)
-                  .collect(Collectors.joining(", "))
-                  + " (each with a "
-                  + winningHand.getHandType() + ").");
-
+          callback.declareSplitPot(winners.stream().map(Hand::getPlayer).map(Player::getName)
+                  .collect(Collectors.toList()), winningHand.getHandType(), pot);
           int winnings = pot / numWinners;
           for (Hand hand : winners) {
             hand.getPlayer().win(winnings);
@@ -386,7 +362,7 @@ public class Table {
     } while ((nextPlayer = players.get(turnIndex)).isFolded());
 
     if (nextPlayer.isAllIn()) {
-      messageChannel(nextPlayer.getName() + " is all-in, next player...");
+      callback.announce(nextPlayer.getName() + " is all-in, next player...");
       nextTurn();
     } else {
       sendStatus(nextPlayer.getName());
@@ -394,16 +370,12 @@ public class Table {
   }
 
   private void sendStatus(String turn) {
-    final String tableStr = table.isEmpty() ? "no cards" : table.stream()
-        .map(Card::toString).collect(Collectors.joining(", "));
-
-    messageChannel("On the table: " + tableStr + " || In the pot: " + moneyString(pot));
-
-    messageChannel(turn + "'s turn!");
+    callback.updateTable(table, pot, turn);
+    callback.declarePlayerTurn(turn);
   }
 
   private void collectAntes() {
-    messageChannel("Collecting a " + moneyString(Constants.ANTE) + " ante from each player...");
+    callback.collectAnte(Constants.ANTE);
 
     for (Player player : players) {
       pot += player.bet(Constants.ANTE);
@@ -421,7 +393,7 @@ public class Table {
   }
 
   public void startGame() {
-    messageChannel("Starting game with: "
+    callback.announce("Starting game with: "
         + players.stream().map(Player::getName)
         .collect(Collectors.joining(", ")) + ".");
 
@@ -456,9 +428,9 @@ public class Table {
     table.clear();
 
     if (winner == null) {
-      messageChannel("Game stopped. No conclusive winner.");
+      callback.announce("Game stopped. No conclusive winner.");
     } else {
-      messageChannel("Game stopped. " + winner.getName() + " is the winner!");
+      callback.announce("Game stopped. " + winner.getName() + " is the winner!");
     }
 
     try {
@@ -480,7 +452,7 @@ public class Table {
     }
 
     if (numPlayersLeft == 1) {
-      messageChannel(last.getName() + " wins (all other players folded)!");
+      callback.announce(last.getName() + " wins (all other players folded)!");
 
       last.win(pot);
       setupHand();
@@ -518,10 +490,6 @@ public class Table {
     return index;
   }
 
-  private static String moneyString(int amount) {
-    return "$" + amount;
-  }
-
   private int wrappedIncrement(int n) {
     n++;
     if (n >= players.size())
@@ -549,37 +517,37 @@ public class Table {
 
       if (player.getName().equals(sender)) {
         iter.remove();
-        messageChannel(sender + ": You have unjoined.");
+        callback.announce(sender + ": You have unjoined.");
         everJoined = true;
         break;
       }
     }
 
     if (buyInPlayers.contains(sender)) {
-      messageChannel(sender + ": Your buyin was nulled.");
+      callback.announce(sender + ": Your buyin was nulled.");
       buyInPlayers.remove(sender);
     } else if (!everJoined) {
-      messageChannel(sender + ": You never joined.");
+      callback.announce(sender + ": You never joined.");
     }
   }
 
   public void buyin(String sender) {
     if (!gameInProgress) {
-      messageChannel(sender + ": Game hasn't started yet, putting you up for the game");
+      callback.announce(sender + ": Game hasn't started yet, putting you up for the game");
       registerPlayer(sender);
       return;
     }
     for(Player player: players) {
       if (player.getName().equals(sender)) {
-        messageChannel(sender + ": You're already in the game.");
+        callback.announce(sender + ": You're already in the game.");
         return;
       }
     }
     if (buyInPlayers.contains(sender)) {
-      messageChannel(sender + ": You've already bought in");
+      callback.announce(sender + ": You've already bought in");
       return;
     }
     buyInPlayers.add(sender);
-    messageChannel(sender + " has bought in the game, will join on next hand.");
+    callback.announce(sender + " has bought in the game, will join on next hand.");
   }
 }

@@ -1,4 +1,6 @@
-package me.ars.pokerbot;
+package me.ars.pokerbot.poker;
+
+import me.ars.pokerbot.Constants;
 
 public class Player {
 	private String name;

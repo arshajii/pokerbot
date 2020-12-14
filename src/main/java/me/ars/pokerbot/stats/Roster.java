@@ -1,4 +1,4 @@
-package me.ars.pokerbot;
+package me.ars.pokerbot.stats;
 
 import java.io.*;
 import java.util.HashMap;
