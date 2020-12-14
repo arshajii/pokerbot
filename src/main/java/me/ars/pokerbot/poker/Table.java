@@ -103,6 +103,7 @@ public class Table {
 
     callback.playerChecked(nick);
     if (player.getAmountPayed() >= totalBets) {
+      mainPot.checkPlayer(player);
       nextTurn();
     } else {
       callback.mustCallRaise(player.getName(), amountOwed(player));
@@ -349,6 +350,8 @@ public class Table {
 
   private void checkWinners(Pot pot) {
     List<Hand> hands = new ArrayList<>(pot.getParticipants().size());
+    callback.announce("Amount of participants in pot: " + pot.getParticipants().size());
+    callback.announce("Has side pot: " + pot.hasSidePot());
     for (Player p : pot.getParticipants()) {
       final Card[] playerCards = table.toArray(new Card[7]);
       playerCards[5] = p.getCard1();

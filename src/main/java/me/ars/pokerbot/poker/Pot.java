@@ -42,6 +42,10 @@ public class Pot {
         players.clear();
     }
 
+    public void checkPlayer(Player player) {
+        addPlayer(player);
+    }
+
     public void reset() {
         size = 0;
         currentBet = 0;
@@ -51,6 +55,7 @@ public class Pot {
 
     public void collectAnte(Player player, int ante) {
         size += ante;
+        currentBet = ante;
         addPlayer(player);
     }
 
