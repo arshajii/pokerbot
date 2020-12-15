@@ -60,10 +60,13 @@ public class Table {
     int playerPays = player.bet(bet);
 
     final boolean hadSidepots = mainPot.hasSidePot();
-    final Pot sidePot = mainPot.call(player, playerPays);
+    mainPot.call(player, playerPays);
+    /*
     if (sidePot != null) {
       sidePots.add(sidePot);
     }
+
+     */
 
     if (hadSidepots) {
       for (Pot otherSidePot : sidePots) {

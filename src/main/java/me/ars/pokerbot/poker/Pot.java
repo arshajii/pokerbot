@@ -7,7 +7,7 @@ public class Pot {
 
     private final List<Player> players;
     private final boolean isMainPot;
-    private boolean hasSidePot;
+    private Pot sidePot;
     private int size;
     private int currentBet;
 
@@ -15,7 +15,7 @@ public class Pot {
         players = new ArrayList<>();
         size = 0;
         currentBet = 0;
-        hasSidePot = false;
+        sidePot = null;
         isMainPot = true;
     }
 
@@ -23,7 +23,7 @@ public class Pot {
         this.players = players;
         this.size = size;
         this.currentBet = currentBet;
-        this.hasSidePot = false;
+        this.sidePot = null;
         this.isMainPot = false;
     }
 
@@ -33,13 +33,25 @@ public class Pot {
         }
     }
 
+    public int getTotalMoney() {
+        int money = size;
+        if (sidePot != null) {
+            money += sidePot.getTotalMoney();
+        }
+        return money;
+    }
+
     public int getCurrentBet() {
         return currentBet;
     }
 
     public void newTurn() {
         currentBet = 0;
-        players.clear();
+        if (sidePot != null) {
+            sidePot.newTurn();
+        } else {
+            players.clear();
+        }
     }
 
     public void checkPlayer(Player player) {
@@ -49,12 +61,13 @@ public class Pot {
     public void reset() {
         size = 0;
         currentBet = 0;
-        hasSidePot = false;
+        sidePot = null;
         players.clear();
     }
 
     public void collectAnte(Player player, int ante) {
-        size += ante;
+        size += player.bet(ante);
+        System.out.println("Collecting ante from " + player + ", total paid: " + player.getAmountPayed());
         currentBet = ante;
         addPlayer(player);
     }
@@ -68,44 +81,55 @@ public class Pot {
     }
 
     public boolean hasSidePot() {
-        return hasSidePot;
+        return sidePot != null;
     }
 
     public boolean isMainPot() {
         return isMainPot;
     }
 
+    public Pot getSidePot() {
+        return sidePot;
+    }
+
     public void raise(Player player, int amount) {
-        currentBet += amount;
-        size += amount;
-        addPlayer(player);
+        if (sidePot == null) {
+            System.out.println(player + " has raised by " + amount);
+            currentBet += player.bet(amount);
+            size += amount;
+            addPlayer(player);
+        } else {
+            System.out.println(player + " raised, but its going into a sidepot");
+            sidePot.raise(player, amount);
+        }
     }
 
     /**
      * Returns a new Pot (sidepot) if one needs to be created
      */
-    public Pot call(Player player, int amount) {
+    public void call(Player player, int amount) {
+        if (players.contains(player)) {
+            
+        }
         if (amount > currentBet) {
-            raise(player, amount);
-            return null;
+            throw new IllegalStateException("Trying to call higher than the bet");
         }
         addPlayer(player);
-        size += amount;
-        if (amount == currentBet) {
-            return null;
+        size += player.bet(amount);
+        if (player.getAmountPayed() == currentBet) {
+            return;
         } else {
             final int difference = currentBet - amount;
             final List<Player> sidepotPlayers = new ArrayList<>();
-            int sidePot = 0;
+            int sidePotAmount = 0;
             for (Player callingPlayer : players) {
                 if (callingPlayer.equals(player)) continue;
-                sidePot += difference;
+                sidePotAmount += difference;
                 size -= difference;
                 sidepotPlayers.add(callingPlayer);
             }
-            hasSidePot = true;
             currentBet -= difference;
-            return new Pot(sidepotPlayers, sidePot, difference);
+            sidePot = new Pot(sidepotPlayers, sidePotAmount, difference);
         }
     }
 }

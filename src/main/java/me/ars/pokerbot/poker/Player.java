@@ -16,8 +16,18 @@ public class Player {
 	private boolean folded = false;
 	private boolean isAllIn = false;
 
+	@Override
+	public String toString() {
+		return name;
+	}
+
 	public Player(String name) {
 		this.name = name;
+	}
+
+	public Player(String name, int startMoney) {
+		this.name = name;
+		this.money = startMoney;
 	}
 
 	public boolean isAllIn() {
