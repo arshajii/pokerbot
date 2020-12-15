@@ -14,7 +14,6 @@ public class Table {
   private final List<Card> table = new ArrayList<>(5);
   private final Queue<String> buyInPlayers = new ArrayDeque<>();
   private final Roster roster;
-  private final List<Pot> sidePots;
 
   private Calendar lastActivity = null;
   private boolean gameInProgress = false;
@@ -27,7 +26,6 @@ public class Table {
     this.callback = callback;
     this.roster = roster;
     this.mainPot = new Pot();
-    this.sidePots = new ArrayList<>();
   }
 
   private boolean verifyCurrentPlayer(Player player) {
@@ -51,7 +49,7 @@ public class Table {
     if (!verifyCurrentPlayer(player)) return;
     setActivity();
 
-    final int owed = amountOwed(player);
+    final int owed = mainPot.getTotalOwed(player);
     final int money = player.getMoney();
     final int bet;
 
@@ -59,21 +57,7 @@ public class Table {
     bet = Math.min(money, owed);
     int playerPays = player.bet(bet);
 
-    final boolean hadSidepots = mainPot.hasSidePot();
     mainPot.call(player, playerPays);
-    /*
-    if (sidePot != null) {
-      sidePots.add(sidePot);
-    }
-
-     */
-
-    if (hadSidepots) {
-      for (Pot otherSidePot : sidePots) {
-        otherSidePot.call(player, otherSidePot.getCurrentBet());
-      }
-    }
-
     nextTurn();
   }
 
@@ -102,14 +86,15 @@ public class Table {
     if (!verifyCurrentPlayer(player)) return;
     setActivity();
 
-    int totalBets = mainPot.getCurrentBet() + sidePots.stream().mapToInt(Pot::getCurrentBet).sum();
+    final int totalBets = mainPot.getTotalBets();
+    final int playerContribution = mainPot.getTotalContribution(player);
 
-    callback.playerChecked(nick);
-    if (player.getAmountPayed() >= totalBets) {
+    if (playerContribution >= totalBets) {
+      callback.playerChecked(nick);
       mainPot.checkPlayer(player);
       nextTurn();
     } else {
-      callback.mustCallRaise(player.getName(), amountOwed(player));
+      callback.mustCallRaise(player.getName(), mainPot.getTotalOwed(player));
     }
   }
 
@@ -121,20 +106,11 @@ public class Table {
     if (!verifyCurrentPlayer(player)) return;
     setActivity();
 
-    final int totalBet = amountOwed(player) + newRaise;
+    final int totalBet = mainPot.getTotalOwed(player) + newRaise;
     final int money = player.getMoney();
 
     if (totalBet <= money) {
-      if (!mainPot.hasSidePot()) {
-        mainPot.raise(player, player.bet(totalBet));
-      } else {
-        for(Pot sidePot: sidePots) {
-          if (!sidePot.hasSidePot()) {
-            sidePot.raise(player, player.bet(totalBet));
-          }
-        }
-      }
-
+      mainPot.raise(player, player.bet(totalBet));
       callback.playerRaised(player.getName(), newRaise);
       lastIndex = lastUnfolded(turnIndex - 1);
       nextTurn();
@@ -150,7 +126,7 @@ public class Table {
     final Player player = getPlayer(nick);
     if (!verifyCurrentPlayer(player)) return;
     setActivity();
-    final int owed = amountOwed(player);
+    final int owed = mainPot.getTotalOwed(player);
     final int money = player.getMoney();
 
     callback.playerAllin(player.getName());
@@ -303,7 +279,6 @@ public class Table {
       startPlayer = 0;
     }
     mainPot.reset();
-    sidePots.clear();
     // TODO: Blinds
 
     callback.showPlayers(players.stream().collect(Collectors.toMap(Player::getName, Player::getMoney)));
@@ -314,20 +289,13 @@ public class Table {
 
   private void nextTurn() {
     mainPot.newTurn();
-    sidePots.forEach(Pot::newTurn);
     final Player player = players.get(turnIndex);
-    if (turnIndex == lastIndex && (player.isFolded() || player.isBroke() || amountOwed(player) == 0)) {
+    if (turnIndex == lastIndex && (player.isFolded() || player.isBroke() || mainPot.getTotalOwed(player) == 0)) {
 
       if (table.size() == 5) {
         // winner selection
         // todo check for pot
         checkWinners(mainPot);
-        if (sidePots.size()>0) {
-          callback.announce("Checking sidepots...");
-          for(Pot sidePot: sidePots) {
-            checkWinners(sidePot);
-          }
-        }
         setupHand();
         return;
       } else {
@@ -407,6 +375,10 @@ public class Table {
       for (Hand hand : winners) {
         hand.getPlayer().win(winnings);
       }
+    }
+    if (pot.hasSidePot()) {
+      callback.announce("Checking for sidepot winnings...");
+      checkWinners(pot.getSidePot());
     }
   }
 
@@ -495,21 +467,13 @@ public class Table {
     if (numPlayersLeft == 1) {
       callback.announce(last.getName() + " wins (all other players folded)!");
 
-      int totalMoney = mainPot.getMoney();
-      for(Pot sidePot: sidePots) {
-        totalMoney += sidePot.getMoney();
-      }
+      int totalMoney = mainPot.getTotalMoney();
       last.win(totalMoney);
       setupHand();
       return true;
     }
 
     return false;
-  }
-
-  private int amountOwed(Player player) {
-    final int totalBet = mainPot.getCurrentBet() + sidePots.stream().mapToInt(Pot::getCurrentBet).sum();
-    return totalBet - player.getAmountPayed();
   }
 
   private void ensureNotAllFolded() {
