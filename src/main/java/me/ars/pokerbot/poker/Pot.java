@@ -84,8 +84,7 @@ public class Pot {
         if (!contributions.containsKey(player)) {
             contributions.put(player, 0);
         }
-        //todo
-        return true;
+        return (getTotalOwed(player) == 0);
     }
 
     public void reset() {
@@ -129,15 +128,16 @@ public class Pot {
     }
 
     public int raise(Player player, int amount) {
+        final int totalRaised = Math.min(player.getMoney(), amount);
         if (sidePot == null) {
-            System.out.println(player + " has raised by " + amount);
-            currentBet += player.bet(amount);
-            addContribution(player, amount);
+            System.out.println(player + " has raised by " + totalRaised);
+            currentBet += player.bet(totalRaised);
+            addContribution(player, totalRaised);
         } else {
             System.out.println(player + " raised, but its going into a sidepot");
-            sidePot.raise(player, amount);
+            sidePot.raise(player, totalRaised);
         }
-        return -1;
+        return totalRaised;
     }
 
     public void allIn(Player player) {
