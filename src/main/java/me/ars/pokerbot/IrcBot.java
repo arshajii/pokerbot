@@ -96,6 +96,10 @@ public class IrcBot extends PircBot {
         table.registerPlayer(sender);
         break;
       }
+      case "pot": {
+        table.showPot();
+        break;
+      }
       case "unjoin": {
         table.unjoin(sender);
         break;

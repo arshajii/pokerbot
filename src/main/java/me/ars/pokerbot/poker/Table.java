@@ -535,4 +535,22 @@ public class Table {
     buyInPlayers.add(sender);
     callback.announce(sender + " has bought in the game, will join on next hand.");
   }
+
+  public void showPot() {
+    final StringBuilder sb = new StringBuilder();
+    getPot(sb, mainPot);
+    callback.announce(sb.toString());
+  }
+
+  private void getPot(StringBuilder sb, Pot pot) {
+    if (pot.isMainPot()) {
+      sb.append("Main pot: ");
+    } else {
+      sb.append(", Side pot: ");
+    }
+    sb.append(pot.getMoney());
+    if (pot.hasSidePot()) {
+      getPot(sb, pot.getSidePot());
+    }
+  }
 }

@@ -166,7 +166,9 @@ public class Pot {
                 sidePot.call(player, amount);
                 return;
             } else {
-                throw new IllegalStateException(player + " is trying to shove in " + amount + " but this pot is already satisfied and there is no side pot");
+                // This should just be a check.
+                System.err.println(player + " is trying to shove in " + amount + " but this pot is already satisfied and there is no side pot");
+                sidePot.checkPlayer(player);
             }
         }
         if (amount > currentBet) {
