@@ -68,6 +68,7 @@ public class Table {
     }
     final String currentPlayer = players.get(turnIndex).getName();
     callback.updateTable(table, mainPot.getMoney(), currentPlayer);
+    callback.announce(currentPlayer + " has $" + getPlayer(currentPlayer).getMoney());
   }
 
   /**
@@ -399,9 +400,8 @@ public class Table {
 
   public void stopGame() {
     gameInProgress = false;
-    Player winner = null;
     if (players.size() == 1) {
-      winner = players.get(0);
+      final Player winner = players.get(0);
       roster.modifyMoney(winner.getName(), winner.getMoney() - Constants.START_MONEY);
     } else {
       int highscore = 0;
@@ -410,7 +410,6 @@ public class Table {
         roster.modifyMoney(player.getName(), playerMoney - Constants.START_MONEY);
         if (playerMoney > highscore) {
           highscore = playerMoney;
-          winner = player;
         }
       }
     }
@@ -418,11 +417,7 @@ public class Table {
     deck.clear();
     table.clear();
 
-    if (winner == null) {
-      callback.announce("Game stopped. No conclusive winner.");
-    } else {
-      callback.announce("Game stopped. " + winner.getName() + " is the winner!");
-    }
+    callback.announce("Game stopped.");
 
     try {
       roster.saveRoster();
@@ -441,6 +436,8 @@ public class Table {
       else
         last = player;
     }
+
+    if (last == null) return false;
 
     if (numPlayersLeft == 1) {
       callback.announce(last.getName() + " wins (all other players folded)!");
