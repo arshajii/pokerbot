@@ -370,7 +370,7 @@ public class Table {
     callback.collectAnte(Constants.ANTE);
 
     for (Player player : players) {
-      mainPot.collectAnte(player, player.bet(Constants.ANTE));
+      mainPot.collectAnte(player, Constants.ANTE);
     }
   }
 
