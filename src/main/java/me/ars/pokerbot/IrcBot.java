@@ -343,12 +343,8 @@ public class IrcBot extends PircBot {
     }
 
     @Override
-    public void playerCalled(String nick, int money, int owed) {
-      if (money >= owed) {
-        sendMessage(channel, nick + " called! (" + moneyString(owed) + ")");
-      } else {
-        sendMessage(channel, nick + " called! (" + moneyString(money) + " of " + moneyString(owed) + ")");
-      }
+    public void playerCalled(String nick, int money) {
+      sendMessage(channel, nick + " called! (" + moneyString(money) + ")");
     }
 
     @Override
@@ -379,8 +375,8 @@ public class IrcBot extends PircBot {
     }
 
     @Override
-    public void playerCannotRaise(String name, int needed, int money) {
-      sendMessage(channel, name + " doesn't have enough money. They need " + moneyString(needed) + " but only have " + moneyString(money) + ".");
+    public void playerCannotRaise(String name, int money) {
+      sendMessage(channel, name + " doesn't have enough money to make the raise. They only have " + moneyString(money) + ".");
     }
 
     @Override

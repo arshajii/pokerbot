@@ -9,9 +9,8 @@ public interface StateCallback {
      *
      * @param nick  Nickname of caller
      * @param money Amount called
-     * @param owed  Amount that was bet
      */
-    void playerCalled(String nick, int money, int owed);
+    void playerCalled(String nick, int money);
 
     /**
      * A player has raised a bet.
@@ -56,10 +55,9 @@ public interface StateCallback {
      * Announce that a player could not raise the specified bet.
      *
      * @param name   Player who tried to bet
-     * @param needed Amount of money they needed to raise this bet
      * @param money  Amount of money they actually had
      */
-    void playerCannotRaise(String name, int needed, int money);
+    void playerCannotRaise(String name, int money);
 
     /**
      * A player has gone all in.

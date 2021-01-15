@@ -48,16 +48,8 @@ public class Table {
     final Player player = getPlayer(nick);
     if (!verifyCurrentPlayer(player)) return;
     setActivity();
-
-    final int owed = mainPot.getTotalOwed(player);
-    final int money = player.getMoney();
-    final int bet;
-
-    callback.playerCalled(nick, money, owed);
-    bet = Math.min(money, owed);
-    int playerPays = player.bet(bet);
-
-    mainPot.call(player, playerPays);
+    final int amount = mainPot.call(player);
+    callback.playerCalled(nick, amount);
     nextTurn();
   }
 
@@ -86,12 +78,10 @@ public class Table {
     if (!verifyCurrentPlayer(player)) return;
     setActivity();
 
-    final int totalBets = mainPot.getTotalBets();
-    final int playerContribution = mainPot.getTotalContribution(player);
+    final boolean checked = mainPot.checkPlayer(player);
 
-    if (playerContribution >= totalBets) {
+    if (checked) {
       callback.playerChecked(nick);
-      mainPot.checkPlayer(player);
       nextTurn();
     } else {
       callback.mustCallRaise(player.getName(), mainPot.getTotalOwed(player));
@@ -101,21 +91,18 @@ public class Table {
   /**
    * Incoming raise from [player]
    */
-  public void raise(String nick, int newRaise) {
+  public void raise(String nick, int raise) {
     final Player player = getPlayer(nick);
     if (!verifyCurrentPlayer(player)) return;
     setActivity();
 
-    final int totalBet = mainPot.getTotalOwed(player) + newRaise;
-    final int money = player.getMoney();
-
-    if (totalBet <= money) {
-      mainPot.raise(player, player.bet(totalBet));
-      callback.playerRaised(player.getName(), newRaise);
+    final int result = mainPot.raise(player, raise);
+    if (result != -1) {
+      callback.playerRaised(player.getName(), result);
       lastIndex = lastUnfolded(turnIndex - 1);
       nextTurn();
     } else {
-      callback.playerCannotRaise(player.getName(), totalBet, money);
+      callback.playerCannotRaise(player.getName(), player.getMoney());
     }
   }
 
@@ -126,17 +113,8 @@ public class Table {
     final Player player = getPlayer(nick);
     if (!verifyCurrentPlayer(player)) return;
     setActivity();
-    final int owed = mainPot.getTotalOwed(player);
-    final int money = player.getMoney();
-
+    mainPot.allIn(player);
     callback.playerAllin(player.getName());
-    player.setAllIn(true);
-
-    if (money > owed) {
-      raise(nick, money - owed);
-    } else {
-      call(nick);
-    }
   }
 
   /**

@@ -80,11 +80,12 @@ public class Pot {
         }
     }
 
-    public void checkPlayer(Player player) {
+    public boolean checkPlayer(Player player) {
         if (!contributions.containsKey(player)) {
             contributions.put(player, 0);
         }
         //todo
+        return true;
     }
 
     public void reset() {
@@ -127,7 +128,7 @@ public class Pot {
         return sidePot;
     }
 
-    public void raise(Player player, int amount) {
+    public int raise(Player player, int amount) {
         if (sidePot == null) {
             System.out.println(player + " has raised by " + amount);
             currentBet += player.bet(amount);
@@ -136,11 +137,28 @@ public class Pot {
             System.out.println(player + " raised, but its going into a sidepot");
             sidePot.raise(player, amount);
         }
+        return -1;
     }
 
-    public void call(Player player, int amount) {
-        final int a = getContribution(player);
-        System.out.println(player + " is putting " + amount + " into pot [ current contribution: " + a + ", current bet: " + currentBet + "]");
+    public void allIn(Player player) {
+        player.setAllIn(true);
+        raise(player, player.getMoney());
+    }
+
+    public int call(Player player) {
+        final int previousContribution = getTotalContribution(player);
+        final int owed = getTotalOwed(player);
+        final int callAmount = Math.min(owed, player.getMoney());
+        call(player, callAmount);
+        if (player.getMoney() == 0) {
+            player.setAllIn(true);
+        }
+        return getTotalContribution(player) - previousContribution;
+    }
+
+    private void call(Player player, int amount) {
+        final int currentContribution = getContribution(player);
+        System.out.println(player + " is putting " + amount + " into pot [ current contribution: " + currentContribution + ", current bet: " + currentBet + "]");
         if (getContribution(player) == currentBet) {
             // Player has already satisfied this pot
             if (sidePot != null) {
