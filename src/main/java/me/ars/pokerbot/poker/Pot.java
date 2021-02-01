@@ -142,8 +142,8 @@ public class Pot {
                 return 0;
             }
         } else {
-            totalRaised = Math.min(player.getMoney(), amount);
             owed = getTotalOwed(player);
+            totalRaised = Math.min(player.getMoney(), amount + owed);
             if (owed > totalRaised + player.getMoney()) {
                 // Cannot raise, not enough money. Let player reconsider raise.
                 return -1;
@@ -151,13 +151,13 @@ public class Pot {
         }
         if (sidePot == null) {
             System.out.println(player + " has raised by " + totalRaised);
-            currentBet += player.bet(totalRaised);
+            currentBet += player.bet(amount);
             addContribution(player, totalRaised);
         } else {
             System.out.println(player + " raised, but its going into a sidepot");
             sidePot.raise(player, totalRaised);
         }
-        return totalRaised;
+        return totalRaised-owed;
     }
 
     public void allIn(Player player) {

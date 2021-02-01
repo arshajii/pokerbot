@@ -321,8 +321,6 @@ public class Table {
   private void checkWinners(Pot pot) {
     final Set<Player> participants = pot.getParticipants();
     List<Hand> hands = new ArrayList<>(participants.size());
-    callback.announce("Amount of participants in pot: " + participants.size());
-    callback.announce("Has side pot: " + pot.hasSidePot());
     for (Player p : participants) {
       final Card[] playerCards = table.toArray(new Card[7]);
       playerCards[5] = p.getCard1();
