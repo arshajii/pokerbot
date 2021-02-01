@@ -370,7 +370,11 @@ public class IrcBot extends PircBot {
     public void updateTable(List<Card> table, int pot, String currentPlayer) {
       final String tableStr = table.isEmpty() ? "no cards" : table.stream()
               .map(Card::toString).collect(Collectors.joining(", "));
-      sendMessage(channel, "On the table: " + tableStr + " || In the pot: " + moneyString(pot) + " || Current player: " + currentPlayer);
+      if (currentPlayer == null || currentPlayer.isEmpty()) {
+        sendMessage(channel, "On the table: " + tableStr + " || In the pot: " + moneyString(pot));
+      } else {
+        sendMessage(channel, "On the table: " + tableStr + " || In the pot: " + moneyString(pot) + " || Current player: " + currentPlayer);
+      }
     }
 
     @Override

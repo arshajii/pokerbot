@@ -41,18 +41,6 @@ public class Table {
     lastActivity = Calendar.getInstance();
   }
 
-  /**
-   * Incoming 'call' from [player]
-   */
-  public void call(String nick) {
-    final Player player = getPlayer(nick);
-    if (!verifyCurrentPlayer(player)) return;
-    setActivity();
-    final int amount = mainPot.call(player);
-    callback.playerCalled(nick, amount);
-    nextTurn();
-  }
-
   public boolean isGameInProgress() {
     return gameInProgress;
   }
@@ -69,6 +57,21 @@ public class Table {
     final String currentPlayer = players.get(turnIndex).getName();
     callback.updateTable(table, mainPot.getMoney(), currentPlayer);
     callback.announce(currentPlayer + " has $" + getPlayer(currentPlayer).getMoney());
+  }
+
+  /**
+   * Incoming 'call' from [player]
+   */
+  public void call(String nick) {
+    final Player player = getPlayer(nick);
+    if (!verifyCurrentPlayer(player)) return;
+    setActivity();
+    final int amount = mainPot.call(player);
+    callback.playerCalled(nick, amount);
+    if (isEveryoneAllin()) {
+      revealHands(players);
+    }
+    nextTurn();
   }
 
   /**
@@ -117,6 +120,9 @@ public class Table {
     mainPot.allIn(player);
     callback.playerAllin(player.getName());
     lastIndex = lastUnfolded(turnIndex - 1);
+    if (isEveryoneAllin()) {
+      revealHands(players);
+    }
     nextTurn();
   }
 
@@ -271,11 +277,10 @@ public class Table {
   private void nextTurn() {
     mainPot.newTurn();
     final Player player = players.get(turnIndex);
-    if (turnIndex == lastIndex && (player.isFolded() || player.isBroke() || mainPot.getTotalOwed(player) == 0)) {
+    if (isEveryoneAllin() || turnIndex == lastIndex && (player.isFolded() || player.isBroke() || mainPot.getTotalOwed(player) == 0)) {
 
       if (table.size() == 5) {
         // winner selection
-        // todo check for pot
         checkWinners(mainPot);
         setupHand();
         return;
@@ -292,7 +297,10 @@ public class Table {
       turnIndex = wrappedIncrement(turnIndex);
     } while ((nextPlayer = players.get(turnIndex)).isFolded());
 
-    if (nextPlayer.isAllIn()) {
+    if (isEveryoneAllin()) {
+      callback.updateTable(table, mainPot.getMoney(), null);
+      nextTurn();
+    } else if (nextPlayer.isAllIn()) {
       callback.announce(nextPlayer.getName() + " is all-in, next player...");
       nextTurn();
     } else {
@@ -300,11 +308,22 @@ public class Table {
     }
   }
 
+  private boolean isEveryoneAllin() {
+    int activePlayers = 0;
+    int allinPlayers = 0;
+    for (Player player : players) {
+      if (player.isAllIn()) allinPlayers++;
+      if (!player.isFolded()) activePlayers++;
+    }
+    return activePlayers == allinPlayers;
+  }
+
   private void checkWinners(Pot pot) {
-    List<Hand> hands = new ArrayList<>(pot.getParticipants().size());
-    callback.announce("Amount of participants in pot: " + pot.getParticipants().size());
+    final Set<Player> participants = pot.getParticipants();
+    List<Hand> hands = new ArrayList<>(participants.size());
+    callback.announce("Amount of participants in pot: " + participants.size());
     callback.announce("Has side pot: " + pot.hasSidePot());
-    for (Player p : pot.getParticipants()) {
+    for (Player p : participants) {
       final Card[] playerCards = table.toArray(new Card[7]);
       playerCards[5] = p.getCard1();
       playerCards[6] = p.getCard2();
@@ -332,17 +351,7 @@ public class Table {
       if (!next.getPlayer().isFolded())
         winners.add(next);
     }
-    final Map<String, List<Card>> reveal = new HashMap<>();
-    for(Player p: players) {
-      if (!p.isFolded()) {
-        final List<Card> cards = new ArrayList<>();
-        cards.add(p.getCard1());
-        cards.add( p.getCard2());
-        reveal.put(p.getName(), cards);
-      }
-    }
-
-    callback.revealPlayers(reveal);
+    revealHands(participants);
 
     int numWinners = winners.size();
 
@@ -361,6 +370,23 @@ public class Table {
       callback.announce("Checking for sidepot winnings...");
       checkWinners(pot.getSidePot());
     }
+  }
+
+  /**
+   * Reveals non-folded hands of the supplied players.
+   */
+  private void revealHands(Collection<Player> currentPlayers) {
+    final Map<String, List<Card>> reveal = new HashMap<>();
+    for (Player p : currentPlayers) {
+      if (!p.isFolded()) {
+        final List<Card> cards = new ArrayList<>();
+        cards.add(p.getCard1());
+        cards.add(p.getCard2());
+        reveal.put(p.getName(), cards);
+      }
+    }
+
+    callback.revealPlayers(reveal);
   }
 
   private void sendStatus(String turn) {
