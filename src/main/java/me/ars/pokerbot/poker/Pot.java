@@ -81,6 +81,9 @@ public class Pot {
     }
 
     public boolean checkPlayer(Player player) {
+        if (player.isAllIn()) {
+            return true;
+        }
         if (!contributions.containsKey(player)) {
             contributions.put(player, 0);
         }
@@ -128,7 +131,24 @@ public class Pot {
     }
 
     public int raise(Player player, int amount) {
-        final int totalRaised = Math.min(player.getMoney(), amount);
+        final int totalRaised;
+        final int owed;
+
+        if (player.isAllIn()) {
+            owed = call(player);
+            totalRaised = Math.min(player.getMoney(), amount - owed);
+            if (totalRaised < 1) {
+                // Not enough money to raise the specified amount, we stop at the call() above.
+                return 0;
+            }
+        } else {
+            totalRaised = Math.min(player.getMoney(), amount);
+            owed = getTotalOwed(player);
+            if (owed > totalRaised + player.getMoney()) {
+                // Cannot raise, not enough money. Let player reconsider raise.
+                return -1;
+            }
+        }
         if (sidePot == null) {
             System.out.println(player + " has raised by " + totalRaised);
             currentBet += player.bet(totalRaised);
@@ -168,7 +188,9 @@ public class Pot {
             } else {
                 // This should just be a check.
                 System.err.println(player + " is trying to shove in " + amount + " but this pot is already satisfied and there is no side pot");
-                sidePot.checkPlayer(player);
+                if (sidePot != null) {
+                    sidePot.checkPlayer(player);
+                }
             }
         }
         if (amount > currentBet) {

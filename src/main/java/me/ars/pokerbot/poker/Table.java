@@ -116,6 +116,8 @@ public class Table {
     setActivity();
     mainPot.allIn(player);
     callback.playerAllin(player.getName());
+    lastIndex = lastUnfolded(turnIndex - 1);
+    nextTurn();
   }
 
   /**

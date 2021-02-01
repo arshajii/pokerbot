@@ -77,22 +77,6 @@ public class PotTest {
     Assert.assertEquals(paid, pot.getTotalContribution(player3));
   }
 
-  /*
-  11:08 < Poker> Starting game with: kobran, jocke-l.
-11:08 < Poker> Starting new hand...
-11:08 < Poker> [kobran - $200] [jocke-l - $200]
-11:08 < Poker> Collecting a $5 ante from each player...
-11:08 < Poker> On the table: no cards || In the pot: $10 || Current player: kobran
-11:08 < Poker> kobran's turn!
-11:08 < kobran> .raise 5
-11:08 < Poker> kobran raised $5.
-11:08 < Poker> On the table: no cards || In the pot: $15 || Current player: jocke-l
-11:08 < Poker> jocke-l's turn!
-11:09 < jocke-l> .f
-11:09 < Poker> kobran wins (all other players folded)!
-11:09 < Poker> Starting new hand...
-11:09 < Poker> [kobran - $200] [jocke-l - $190]
-   */
   @Test
   public void testAnteRaiseAndFold() {
     final Pot pot = new Pot();
@@ -192,6 +176,36 @@ public class PotTest {
     Assert.assertEquals("Everyone should be in the main pot", everyone, pot.getParticipants());
     Set<Player> sidePotList = toSet(scrooge, gearloose);
     Assert.assertEquals("Scrooge and Gearloose should be in the side pot", sidePotList, sidePot.getParticipants());
+  }
+
+  @Test
+  public void testAllins() {
+    final Player scrooge = new Player("Scrooge", 500);
+    final Player gearloose = new Player("Gearloose", 200);
+    final Player donald = new Player("Donald", 50);
+    final Set<Player> everyone = toSet(scrooge, gearloose, donald);
+    final Pot pot = new Pot();
+    pot.raise(scrooge, 100);
+    pot.call(gearloose);
+    pot.allIn(donald);
+    Assert.assertEquals("There should only be 150 in the main pot", 150, pot.getMoney());
+    Assert.assertEquals("The main pot bet should be floored to 50", 50, pot.getCurrentBet());
+    Assert.assertTrue("There should be a sidepot", pot.hasSidePot());
+    final Pot sidePot = pot.getSidePot();
+    Assert.assertEquals("There should be 100 in the side pot", 100, sidePot.getMoney());
+    Assert.assertEquals("Everyone should be in the main pot", everyone, pot.getParticipants());
+    Set<Player> sidePotList = toSet(scrooge, gearloose);
+    Assert.assertEquals("Scrooge and Gearloose should be in the side pot", sidePotList, sidePot.getParticipants());
+    pot.newTurn();
+    pot.checkPlayer(scrooge);
+    pot.allIn(gearloose);
+    pot.checkPlayer(donald);
+    pot.call(scrooge);
+    final int totalmoney = pot.getTotalMoney();
+    Assert.assertEquals(450, totalmoney);
+    Assert.assertEquals(50, pot.getTotalContribution(donald));
+    Assert.assertEquals(200, pot.getTotalContribution(gearloose));
+    Assert.assertEquals(200, pot.getTotalContribution(scrooge));
   }
 
   @Test
