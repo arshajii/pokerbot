@@ -487,7 +487,12 @@ public class IrcBot extends PircBot {
 
     @Override
     public void collectAnte(int ante) {
-      sendMessage(channel, "Collecting a " + moneyString(Constants.ANTE) + " ante from each player...");
+      sendMessage(channel, "Collecting a " + moneyString(ante) + " ante from each player...");
+    }
+
+    @Override
+    public void collectBlinds(String bigBlindPlayer, int bigBlind, String smallBlindPlayer, int smallBlind) {
+      sendMessage(channel, "Collecting blinds (" + moneyString(bigBlind) + " from " + renderNick(bigBlindPlayer) + ", " + moneyString(smallBlind) + " from " + renderNick(smallBlindPlayer) + ")");
     }
   }
 }

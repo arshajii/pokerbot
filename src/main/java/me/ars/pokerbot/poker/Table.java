@@ -8,6 +8,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class Table {
+  // todo: make this changeable
+  private final int forcedBetType = Constants.FORCED_BET_BLINDS;
   private final StateCallback callback;
   private final List<Player> players = new ArrayList<>();
   private final Queue<Card> deck = new ArrayDeque<>(52);
@@ -274,7 +276,7 @@ public class Table {
 
     callback.showPlayers(players.stream().collect(Collectors.toMap(Player::getName, Player::getMoney)));
     deal();
-    collectAntes();
+    collectForcedBets();
     sendStatus(getCurrentPlayer().getName());
   }
 
@@ -393,11 +395,24 @@ public class Table {
     callback.declarePlayerTurn(turn);
   }
 
-  private void collectAntes() {
-    callback.collectAnte(Constants.ANTE);
+  private void collectForcedBets() {
+    if (forcedBetType == Constants.FORCED_BET_ANTE) {
+      callback.collectAnte(Constants.ANTE);
 
-    for (Player player : players) {
-      mainPot.collectAnte(player, Constants.ANTE);
+      for (Player player : players) {
+        mainPot.collectAnte(player, Constants.ANTE);
+      }
+    } else if (forcedBetType == Constants.FORCED_BET_BLINDS) {
+      final int blindPlayer = turnIndex;
+      final Player smallBlindPlayer = players.get(turnIndex);
+      final int smallBlind = mainPot.collectSmallBlind(smallBlindPlayer, Constants.BIG_BLIND_AMOUNT);
+      lastIndex = lastUnfolded(turnIndex - 1);
+      turnIndex = wrappedIncrement(turnIndex);
+      final Player bigBlindPlayer = players.get(wrappedIncrement(blindPlayer));
+      final int bigBlind = mainPot.collectBigBlind(bigBlindPlayer, Constants.BIG_BLIND_AMOUNT);
+      lastIndex = lastUnfolded(turnIndex - 1);
+      turnIndex = wrappedIncrement(turnIndex);
+      callback.collectBlinds(bigBlindPlayer.getName(), bigBlind, smallBlindPlayer.getName(), smallBlind);
     }
   }
 

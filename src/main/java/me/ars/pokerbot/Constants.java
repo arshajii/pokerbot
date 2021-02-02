@@ -22,8 +22,13 @@ public final class Constants {
 
 	public static final boolean VERBOSE;
 
+
 	public static final int START_MONEY;
 	public static final int ANTE;
+	public static final int BIG_BLIND_AMOUNT = 5;
+
+	public static final int FORCED_BET_ANTE = 99;
+	public static final int FORCED_BET_BLINDS = 100;
 
 	private static final String CFG_FILENAME = "parameters.cfg";
 

@@ -135,4 +135,14 @@ public interface StateCallback {
      * @param ante How much money the ante is
      */
     void collectAnte(int ante);
+
+    /**
+     * Declare that the blinds are being collected
+     *
+     * @param bigBlindPlayer   The player that pays the big blind
+     * @param bigBlind         How big the big blind is
+     * @param smallBlindPlayer The player that pays the small blind
+     * @param smallBlind       How big the small blind is
+     */
+    void collectBlinds(String bigBlindPlayer, int bigBlind, String smallBlindPlayer, int smallBlind);
 }

@@ -66,7 +66,7 @@ Requirements
 To-do
 -----
 
-- [ ] Small and big blinds
+- [x] Small and big blinds
 - [x] Side pot logic
 - [x] Further separation of front-end (bot) and back-end (poker engine)
 - [x] Let ongoing games be joinable

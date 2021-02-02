@@ -102,6 +102,19 @@ public class Pot {
         addContribution(player, player.bet(ante));
     }
 
+    public int collectBigBlind(Player player, int bigBlind) {
+        System.out.println("Collecting big blind (" + bigBlind + ") from " + player);
+        raise(player, bigBlind - (int) Math.ceil(((double) bigBlind) / 2));
+        return bigBlind;
+    }
+
+    public int collectSmallBlind(Player player, int bigBlind) {
+        final int smallBlind = (int) Math.ceil(((double) bigBlind) / 2);
+        System.out.println("Collecting small blind (" + smallBlind + ") from " + player);
+        raise(player, smallBlind);
+        return smallBlind;
+    }
+
     public Set<Player> getParticipants() {
         return contributions.keySet();
     }
