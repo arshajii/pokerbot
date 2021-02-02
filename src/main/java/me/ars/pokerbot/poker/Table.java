@@ -359,10 +359,7 @@ public class Table {
     } else {
       callback.declareSplitPot(winners.stream().map(Hand::getPlayer).map(Player::getName)
               .collect(Collectors.toList()), winningHand.getHandType(), pot.getMoney());
-      int winnings = pot.getMoney() / numWinners;
-      for (Hand hand : winners) {
-        hand.getPlayer().win(winnings);
-      }
+      pot.splitPot(winners.stream().map(Hand::getPlayer).collect(Collectors.toSet()));
     }
     if (pot.hasSidePot()) {
       callback.announce("Checking for sidepot winnings...");

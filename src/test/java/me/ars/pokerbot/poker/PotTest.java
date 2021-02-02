@@ -237,4 +237,34 @@ public class PotTest {
     Assert.assertEquals("Everyone has put in 550", 550, pot.getTotalMoney());
     Assert.assertEquals("Scrooge should be alone in the last sidepot", thirdPotParticipants, secondSidePot.getParticipants());
   }
+
+  @Test
+  public void testReRaiseAndSplitPot() {
+    final Pot pot = new Pot();
+    final Set<Player> expectedList = toSet(player1, player2);
+    pot.collectAnte(player1, ANTE);
+    pot.collectAnte(player2, ANTE);
+    Assert.assertEquals(ANTE, pot.getCurrentBet());
+    pot.raise(player1, 5);
+    pot.raise(player2, 5);
+    pot.call(player1);
+    Assert.assertEquals(30, pot.getMoney());
+    Assert.assertEquals("Player 1 should have put in 15 so far.", (200-15), player1.getMoney());
+    Assert.assertEquals("Player 2 should have put in 15 so far.", (200-15), player2.getMoney());
+    pot.newTurn();
+    pot.checkPlayer(player1);
+    pot.checkPlayer(player2);
+    pot.newTurn();
+    pot.checkPlayer(player1);
+    pot.raise(player2, 10);
+    pot.call(player1);
+    pot.newTurn();
+    pot.checkPlayer(player1);
+    pot.raise(player2, 10);
+    pot.call(player1);
+
+    pot.splitPot(expectedList);
+    Assert.assertEquals("Player 1 should be back at starting money",200, player1.getMoney());
+    Assert.assertEquals("Player 2 should be back at starting money",200, player2.getMoney());
+  }
 }

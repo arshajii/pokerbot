@@ -151,8 +151,8 @@ public class Pot {
         }
         if (sidePot == null) {
             System.out.println(player + " has raised by " + totalRaised);
-            currentBet += player.bet(amount);
-            addContribution(player, totalRaised);
+            currentBet += amount;
+            addContribution(player, player.bet(totalRaised));
         } else {
             System.out.println(player + " raised, but its going into a sidepot");
             sidePot.raise(player, totalRaised);
@@ -243,5 +243,15 @@ public class Pot {
                 ", sidePot=" + sidePot +
                 ", currentBet=" + currentBet +
                 '}';
+    }
+
+    /**
+     * Split up the winnings of this pot to multiple players
+     */
+    public void splitPot(Set<Player> winners) {
+        int winnings = getMoney() / winners.size();
+        for(Player winner: winners) {
+            winner.win(winnings);
+        }
     }
 }
