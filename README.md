@@ -34,14 +34,13 @@ Keyword | Description
 --------|------------
 `ping` | Ping the bot for a reply.
 `join` | Add yourself to the players list for the next game.
+`buyin` | Join the next hand for an existing game
 `unjoin` | Remove yourself from the players list for the next game.
 `joined` | Display who is in the players list for the next game.
 `start` | Start the game.
-`clear`* | Clear the players list for the next game.
-`stop`* | Stop the game.
+`clear` | Clear the players list for the next game.
+`stop` | Stop the game.
 `help` | Display help information.
-
-<sup>* Requires administrative access.
 
 #### Game Commands
 
@@ -52,10 +51,6 @@ Keyword | Description
 `raise` | Raise by the specified amount *on top of* the last raise (which may have been 0).
 `fold` | Discard your hand and forfeit. You can resume playing next hand.
 `cashout` | Quit the game, taking the fortunes you've won with you.
-
-### Authentication
-
-The bot operates using a hostname-based authentication system. To register yourself as an administrator, simply issue the special `auth` command followed by the admin password in a private-message to the bot.
 
 ### Customization
 
@@ -71,11 +66,10 @@ Requirements
 To-do
 -----
 
-- [ ] Side pot logic
 - [ ] Small and big blinds
+- [x] Side pot logic
 - [x] Further separation of front-end (bot) and back-end (poker engine)
-- [ ] Limit the number of tables that can be created?
-- [ ] Let ongoing games be joinable
+- [x] Let ongoing games be joinable
 
 
 Issues
