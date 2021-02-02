@@ -379,18 +379,22 @@ public class IrcBot extends PircBot {
       return Colors.BOLD + color + valueStr + suit + Colors.NORMAL;
     }
 
+    private String renderNick(String nick) {
+      return Colors.BOLD + nick + Colors.NORMAL;
+    }
+
     private String renderHand(Hand hand) {
       return Colors.BOLD + hand.toString() + Colors.NORMAL;
     }
 
     @Override
     public void playerCalled(String nick, int money) {
-      sendMessage(channel, nick + " called! (" + moneyString(money) + ")");
+      sendMessage(channel, renderNick(nick) + " called! (" + moneyString(money) + ")");
     }
 
     @Override
     public void playerRaised(String name, int newRaise) {
-      sendMessage(channel, name + " raised " + moneyString(newRaise) + ".");
+      sendMessage(channel, renderNick(name) + " raised " + moneyString(newRaise) + ".");
     }
 
     @Override
@@ -410,23 +414,24 @@ public class IrcBot extends PircBot {
       if (currentPlayer == null || currentPlayer.isEmpty()) {
         sendMessage(channel, "On the table: " + tableStr + " || In the pot: " + moneyString(pot));
       } else {
-        sendMessage(channel, "On the table: " + tableStr + " || In the pot: " + moneyString(pot) + " || Current player: " + currentPlayer);
+        sendMessage(channel, "On the table: " + tableStr + " || In the pot: " + moneyString(pot) +
+            " || Current player: " + renderNick(currentPlayer));
       }
     }
 
     @Override
     public void mustCallRaise(String name, int amountOwed) {
-      sendMessage(channel, name + " must at least call last raise (" + moneyString(amountOwed) + ").");
+      sendMessage(channel, renderNick(name) + " must at least call last raise (" + moneyString(amountOwed) + ").");
     }
 
     @Override
     public void playerCannotRaise(String name, int money) {
-      sendMessage(channel, name + " doesn't have enough money to make the raise. They only have " + moneyString(money) + ".");
+      sendMessage(channel, renderNick(name) + " doesn't have enough money to make the raise. They only have " + moneyString(money) + ".");
     }
 
     @Override
     public void playerAllin(String name) {
-      sendMessage(channel, name + " goes all in!");
+      sendMessage(channel, renderNick(name) + " goes all in!");
     }
 
     @Override
@@ -436,7 +441,7 @@ public class IrcBot extends PircBot {
 
     @Override
     public void playerCashedOut(String name, int money) {
-      sendMessage(channel, name + " cashed out with " + moneyString(money) + "!");
+      sendMessage(channel, renderNick(name) + " cashed out with " + moneyString(money) + "!");
     }
 
     @Override
@@ -447,14 +452,14 @@ public class IrcBot extends PircBot {
     @Override
     public void showPlayers(Map<String, Integer> players) {
       sendMessage(channel, players.keySet().stream()
-              .map(player -> "[" + player + " - " + moneyString(players.get(player)) + "]")
+              .map(player -> "[" + renderNick(player) + " - " + moneyString(players.get(player)) + "]")
               .collect(Collectors.joining(" ")));
     }
 
     @Override
     public void revealPlayers(Map<String, List<Card>> reveal) {
       sendMessage(channel, reveal.keySet().stream()
-              .map(player -> "[" + player + " - " +
+              .map(player -> "[" + renderNick(player) + " - " +
                       renderCard(reveal.get(player).get(0)) + ", " +
                       renderCard(reveal.get(player).get(1)) + "]")
               .collect(Collectors.joining(" ")));
@@ -462,7 +467,7 @@ public class IrcBot extends PircBot {
 
     @Override
     public void declareWinner(String name, Hand winningHand, int pot) {
-      sendMessage(channel, name + " wins " + moneyString(pot) + " with the hand " + renderHand(winningHand) + "!");
+      sendMessage(channel, renderNick(name) + " wins " + moneyString(pot) + " with the hand " + renderHand(winningHand) + "!");
     }
 
     @Override
@@ -475,7 +480,7 @@ public class IrcBot extends PircBot {
 
     @Override
     public void declarePlayerTurn(String player) {
-      sendMessage(channel, player + "'s turn!");
+      sendMessage(channel, renderNick(player) + "'s turn!");
     }
 
     @Override
