@@ -1,9 +1,6 @@
 package me.ars.pokerbot.poker;
 
 import java.util.Arrays;
-
-import org.jibble.pircbot.Colors;
-
 /*
  * Note: this class has a natural ordering that is inconsistent with equals.
  * 
@@ -18,13 +15,13 @@ public class Card implements Comparable<Card> {
 		public String toString() {
 			switch (this) {
 			case SPADES:
-				return "\u2660";
+				return "Spades";
 			case HEARTS:
-				return "\u2665";
+				return "Hearts";
 			case DIAMONDS:
-				return "\u2666";
+				return "Diamonds";
 			case CLUBS:
-				return "\u2663";
+				return "Clubs";
 			default:
 				throw new IllegalStateException();
 			}
@@ -52,10 +49,7 @@ public class Card implements Comparable<Card> {
 
 	@Override
 	public String toString() {
-		String color = (suit == Suit.HEARTS || suit == Suit.DIAMONDS) ? Colors.RED
-				: Colors.BLACK;
-
-		String valueStr;
+		final String valueStr;
 
 		switch (value) {
 		case 11:
@@ -74,7 +68,7 @@ public class Card implements Comparable<Card> {
 			valueStr = Integer.toString(value);
 		}
 
-		return Colors.BOLD + color + valueStr + suit + Colors.NORMAL;
+		return valueStr + suit;
 	}
 
 	@Override

@@ -337,13 +337,50 @@ public class IrcBot extends PircBot {
     }
 
     private String renderCard(Card card) {
-      // Todo: IRC-isms should be introduced here
-      return card.toString();
+      final String suit;
+      switch (card.getSuit()) {
+        case SPADES:
+          suit = "\u2660";
+          break;
+        case HEARTS:
+          suit = "\u2665";
+          break;
+        case DIAMONDS:
+          suit = "\u2666";
+          break;
+        case CLUBS:
+          suit = "\u2663";
+          break;
+        default:
+          throw new IllegalStateException();
+      }
+      final String color = (card.getSuit() == Card.Suit.HEARTS || card.getSuit() == Card.Suit.DIAMONDS) ? Colors.RED
+          : Colors.BLACK;
+
+      final String valueStr;
+
+      switch (card.getValue()) {
+        case 11:
+          valueStr = "J";
+          break;
+        case 12:
+          valueStr = "Q";
+          break;
+        case 13:
+          valueStr = "K";
+          break;
+        case 14:
+          valueStr = "A";
+          break;
+        default:
+          valueStr = Integer.toString(card.getValue());
+      }
+
+      return Colors.BOLD + color + valueStr + suit + Colors.NORMAL;
     }
 
     private String renderHand(Hand hand) {
-      // Todo: IRC-isms should be introduced here
-      return hand.toString();
+      return Colors.BOLD + hand.toString() + Colors.NORMAL;
     }
 
     @Override
@@ -404,7 +441,7 @@ public class IrcBot extends PircBot {
 
     @Override
     public void showPlayerCards(String name, Card card1, Card card2) {
-      sendMessage(name, "[#" + channel + "] Your cards: " + renderCard(card1) + ", " + renderCard(card2));
+      sendMessage(name, "[" + channel + "] Your cards: " + renderCard(card1) + ", " + renderCard(card2));
     }
 
     @Override

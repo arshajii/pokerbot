@@ -6,8 +6,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.jibble.pircbot.Colors;
-
 public class Hand implements Comparable<Hand> {
 	public enum HandType {
 		// the order of these matters:
@@ -49,7 +47,7 @@ public class Hand implements Comparable<Hand> {
 				throw new IllegalStateException();
 			}
 
-			return Colors.BOLD + str + Colors.NORMAL;
+			return str;
 		}
 	}
 
