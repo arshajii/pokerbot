@@ -30,7 +30,20 @@ public class Table {
 
   private boolean verifyCurrentPlayer(Player player) {
     if (player == null) return false;
-    return (player.equals(players.get(turnIndex)));
+    return (player.equals(getCurrentPlayer()));
+  }
+
+  public Player getCurrentPlayer() {
+    return players.get(turnIndex);
+  }
+
+  public Player getPlayer(String nick) {
+    for(Player player: players) {
+      if (player.getName().equals(nick)) {
+        return player;
+      }
+    }
+    return null;
   }
 
   public Calendar getLastActivity() {
@@ -54,7 +67,7 @@ public class Table {
       callback.announce("Not currently playing.");
       return;
     }
-    final String currentPlayer = players.get(turnIndex).getName();
+    final String currentPlayer = getCurrentPlayer().getName();
     callback.updateTable(table, mainPot.getMoney(), currentPlayer);
     callback.announce(currentPlayer + " has $" + getPlayer(currentPlayer).getMoney());
   }
@@ -152,15 +165,6 @@ public class Table {
     if (nextTurn) {
       nextTurn();
     }
-  }
-
-  public Player getPlayer(String nick) {
-    for(Player player: players) {
-      if (player.getName().equals(nick)) {
-        return player;
-      }
-    }
-    return null;
   }
 
   public void registerPlayer(String name) {
@@ -271,12 +275,12 @@ public class Table {
     callback.showPlayers(players.stream().collect(Collectors.toMap(Player::getName, Player::getMoney)));
     deal();
     collectAntes();
-    sendStatus(players.get(turnIndex).getName());
+    sendStatus(getCurrentPlayer().getName());
   }
 
   private void nextTurn() {
     mainPot.newTurn();
-    final Player player = players.get(turnIndex);
+    final Player player = getCurrentPlayer();
     if (isEveryoneAllin() || turnIndex == lastIndex && (player.isFolded() || player.isBroke() || mainPot.getTotalOwed(player) == 0)) {
 
       if (table.size() == 5) {
