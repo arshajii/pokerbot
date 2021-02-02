@@ -384,7 +384,9 @@ public class IrcBot extends PircBot {
     }
 
     private String renderHand(Hand hand) {
-      return Colors.BOLD + hand.toString() + Colors.NORMAL;
+      return Colors.BOLD + Arrays.stream(hand.getBestHand()).map(this::renderCard)
+          .collect(Collectors.joining(", "))
+          + " (" + hand.getHandType().toString() + ")" + Colors.NORMAL;
     }
 
     @Override
@@ -410,7 +412,7 @@ public class IrcBot extends PircBot {
     @Override
     public void updateTable(List<Card> table, int pot, String currentPlayer) {
       final String tableStr = table.isEmpty() ? "no cards" : table.stream()
-              .map(Card::toString).collect(Collectors.joining(", "));
+              .map(this::renderCard).collect(Collectors.joining(", "));
       if (currentPlayer == null || currentPlayer.isEmpty()) {
         sendMessage(channel, "On the table: " + tableStr + " || In the pot: " + moneyString(pot));
       } else {

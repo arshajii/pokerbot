@@ -553,6 +553,10 @@ public class Hand implements Comparable<Hand> {
 		return false;
 	}
 
+	public Card[] getBestHand() {
+		return bestHand;
+	}
+
 	@Override
 	public String toString() {
 		return Arrays.stream(bestHand).map(Card::toString)
