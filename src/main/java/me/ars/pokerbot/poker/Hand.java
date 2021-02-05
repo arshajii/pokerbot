@@ -115,19 +115,21 @@ public class Hand implements Comparable<Hand> {
 	 */
 	public static Hand getBestHand(Player player, Card... cards) {
 		final Hand hand1 = bestHand(player, cards);
-		try {
-			final Card[] acesAsOnes = countAcesAsOnes(cards);
-			final Hand hand2 = bestHand(player, acesAsOnes);
-			if (hand1.compareTo(hand2) > 0) {
-				return hand1;
-			} else {
-				return hand2;
+		if (containsValue(cards, 14)) {
+			try {
+				final Card[] acesAsOnes = countAcesAsOnes(cards);
+				final Hand hand2 = bestHand(player, acesAsOnes);
+				final Hand.HandType onesHandType = hand2.getHandType();
+				if ((onesHandType == HandType.STRAIGHT || onesHandType == HandType.STRAIGHT_FLUSH) &&
+						hand2.compareTo(hand1) > 0) {
+					return hand2;
+				} else {
+					return hand1;
+				}
+			} catch (IllegalArgumentException ignored) {
 			}
-		} catch (IllegalArgumentException e) {
-			//System.err.println("Error making hand with ones: " + e);
-			//e.printStackTrace();
-			return hand1;
 		}
+		return hand1;
 	}
 
 	private static Hand bestHand(Player player, Card... cards) {
@@ -170,7 +172,7 @@ public class Hand implements Comparable<Hand> {
 
 		int[] freqs = new int[13];
 
-		if (containsOnes(cards)) {
+		if (containsValue(cards, 1)) {
 			for (Card card : cards) {
 				freqs[card.getValue() - 1]++;
 			}
@@ -393,8 +395,9 @@ public class Hand implements Comparable<Hand> {
 				List<Card> bestHandList = new ArrayList<>(5);
 
 				for (Card card : cards) {
-					if (card.getValue() == twos)
+					if (card.getValue() == twos) {
 						bestHandList.add(card);
+					}
 				}
 
 				for (int i = cards.length - 1; i >= 0; i--) {
@@ -544,9 +547,9 @@ public class Hand implements Comparable<Hand> {
 		return newCards;
 	}
 
-	private static boolean containsOnes(Card[] cards) {
+	private static boolean containsValue(Card[] cards, int value) {
 		for( Card card: cards) {
-			if (card.getValue() == 1) {
+			if (card.getValue() == value) {
 				return true;
 			}
 		}

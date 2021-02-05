@@ -305,6 +305,7 @@ public class HandTest {
     16:15 < Poker> Reveal: [player1 - 6♣, 2♥] [player2 - 2♣, 2♠]
     16:15 < Poker> player2 wins with the hand 3♦, Q♥, J♦, 8♥, 2♠ (one pair)!
      */
+    final Player player2 = new Player("player2");
     final Card card1 = new Card(8, Suit.HEARTS);
     final Card card2 = new Card(12, Suit.DIAMONDS);
     final Card card3 = new Card(3, Suit.DIAMONDS);
@@ -316,7 +317,7 @@ public class HandTest {
     final Card cardD = new Card(2, Suit.SPADES);
     final Hand hand = Hand.getBestHand(player, card1, card2, card3, card4, card5, cardA, cardB);
     Assert.assertEquals(HandType.HIGH_CARD, hand.getHandType());
-    final Hand hand2 = Hand.getBestHand(player, card1, card2, card3, card4, card5, cardC, cardD);
+    final Hand hand2 = Hand.getBestHand(player2, card1, card2, card3, card4, card5, cardC, cardD);
     Assert.assertEquals(HandType.ONE_PAIR, hand2.getHandType());
     Assert.assertEquals(1, hand2.compareTo(hand));
     final List<Card> supposedCards = new ArrayList<>();
@@ -325,7 +326,7 @@ public class HandTest {
     supposedCards.add(card4);
     supposedCards.add(card2);
     supposedCards.add(card5);
-    final Hand referenceHand = new Hand(player, HandType.ONE_PAIR, supposedCards);
+    final Hand referenceHand = new Hand(player2, HandType.ONE_PAIR, supposedCards);
     Assert.assertEquals(referenceHand, hand2);
   }
 
