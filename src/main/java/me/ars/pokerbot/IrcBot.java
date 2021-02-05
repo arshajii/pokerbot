@@ -1,5 +1,6 @@
 package me.ars.pokerbot;
 
+import me.ars.pokerbot.config.IrcBotConfig;
 import me.ars.pokerbot.poker.*;
 import me.ars.pokerbot.stats.Roster;
 import me.ars.pokerbot.stats.Stats;
@@ -27,20 +28,24 @@ public class IrcBot extends PircBot {
    */
   private final Set<String> admins = new HashSet<>();
   private Roster roster;
+  private final IrcBotConfig config;
 
-  public IrcBot(String startingChannel) {
+  public IrcBot(IrcBotConfig config) {
     try {
       roster = Roster.getRoster();
     } catch (IOException e) {
       e.printStackTrace();
     }
     tables = new HashMap<>();
+    this.config = config;
+    final String startingChannel = config.irc.channel;
     final IrcStateCallback startingCallback = new IrcStateCallback(startingChannel);
-    tables.put(startingChannel, new Table(startingCallback, roster));
+    tables.put(startingChannel, new Table(startingCallback, roster, config.game));
 
-    setName(Constants.BOT_NAME);
+    final String botName = config.irc.nick;
+    setName(botName);
     setAutoNickChange(true);
-    setLogin(Constants.BOT_NAME);
+    setLogin(botName);
     setVersion("");
 
     try {
@@ -79,7 +84,7 @@ public class IrcBot extends PircBot {
   @Override
   public void onMessage(String channel, String sender, String login, String hostname, String message) {
 
-    if (!tables.containsKey(channel) || message.isEmpty() || message.charAt(0) != Constants.CMD_PREFIX) {
+    if (!tables.containsKey(channel) || message.isEmpty() || message.charAt(0) != config.irc.commandPrefix) {
       return;
     }
 
@@ -267,7 +272,7 @@ public class IrcBot extends PircBot {
   protected void onPrivateMessage(String sender, String login,
                                   String hostname, String message) {
 
-    if (message.isEmpty() || message.charAt(0) != Constants.CMD_PREFIX)
+    if (message.isEmpty() || message.charAt(0) != config.irc.commandPrefix)
       return;
 
     String[] split = SPACES.split(message, 2);
@@ -275,7 +280,7 @@ public class IrcBot extends PircBot {
     switch (split[0].substring(1)) {
       case "auth":
       case "authenticate":
-        if (Constants.ADMIN_KEY.equals(split[1])) {
+        if (config.irc.adminPassword.equals(split[1])) {
           addAdmin(hostname);
           sendMessage(sender,
               "You have successfully authenticated (hostname: "
@@ -295,7 +300,7 @@ public class IrcBot extends PircBot {
           break;
         }
         final IrcStateCallback callback = new IrcStateCallback(newChannel);
-        tables.put(newChannel, new Table(callback, roster));
+        tables.put(newChannel, new Table(callback, roster, config.game));
         if (split.length > 2) {
           joinChannel(newChannel, split[2]);
         } else {

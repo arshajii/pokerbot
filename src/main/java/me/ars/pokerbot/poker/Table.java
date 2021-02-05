@@ -1,21 +1,20 @@
 package me.ars.pokerbot.poker;
 
-import me.ars.pokerbot.Constants;
 import me.ars.pokerbot.stats.Roster;
+import me.ars.pokerbot.config.GameConfig;
 
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class Table {
-  // todo: make this changeable
-  private final int forcedBetType = Constants.FORCED_BET_BLINDS;
   private final StateCallback callback;
   private final List<Player> players = new ArrayList<>();
   private final Queue<Card> deck = new ArrayDeque<>(52);
   private final List<Card> table = new ArrayList<>(5);
   private final Queue<String> buyInPlayers = new ArrayDeque<>();
   private final Roster roster;
+  private final GameConfig config;
 
   private Calendar lastActivity = null;
   private boolean gameInProgress = false;
@@ -24,9 +23,10 @@ public class Table {
   private int startPlayer;
   private Pot mainPot;
 
-  public Table(StateCallback callback, Roster roster) {
+  public Table(StateCallback callback, Roster roster, GameConfig config) {
     this.callback = callback;
     this.roster = roster;
+    this.config = config;
     this.mainPot = new Pot();
   }
 
@@ -162,7 +162,7 @@ public class Table {
     setActivity();
     player.cashout();
     callback.playerCashedOut(player.getName(), player.getMoney());
-    roster.modifyMoney(player.getName(), player.getMoney() - Constants.START_MONEY);
+    roster.modifyMoney(player.getName(), player.getMoney() - config.startStash);
     final boolean nextTurn = !checkForWinByFold();
     if (nextTurn) {
       nextTurn();
@@ -186,7 +186,7 @@ public class Table {
         return false;
       }
     }
-    final boolean added = players.add(new Player(name));
+    final boolean added = players.add(new Player(name, config.startStash));
     if (verbose) {
       if (added) {
         callback.announce(name + " has joined the game.");
@@ -211,7 +211,7 @@ public class Table {
       player.setAllIn(false);
       if (player.isBroke()) {
         player.cashout();
-        roster.modifyMoney(player.getName(), -Constants.START_MONEY);
+        roster.modifyMoney(player.getName(), - config.startStash);
       }
     }
 
@@ -396,20 +396,22 @@ public class Table {
   }
 
   private void collectForcedBets() {
-    if (forcedBetType == Constants.FORCED_BET_ANTE) {
-      callback.collectAnte(Constants.ANTE);
+    if (config.ante != null) {
+      callback.collectAnte(config.ante);
 
       for (Player player : players) {
-        mainPot.collectAnte(player, Constants.ANTE);
+        mainPot.collectAnte(player, config.ante);
       }
-    } else if (forcedBetType == Constants.FORCED_BET_BLINDS) {
+    }
+
+    if (config.smallBlind != null && config.bigBlind != null) {
       final int blindPlayer = turnIndex;
       final Player smallBlindPlayer = players.get(turnIndex);
-      final int smallBlind = mainPot.collectSmallBlind(smallBlindPlayer, Constants.BIG_BLIND_AMOUNT);
+      final int smallBlind = mainPot.collectSmallBlind(smallBlindPlayer, config.bigBlind);
       lastIndex = lastUnfolded(turnIndex - 1);
       turnIndex = wrappedIncrement(turnIndex);
       final Player bigBlindPlayer = players.get(wrappedIncrement(blindPlayer));
-      final int bigBlind = mainPot.collectBigBlind(bigBlindPlayer, Constants.BIG_BLIND_AMOUNT);
+      final int bigBlind = mainPot.collectBigBlind(bigBlindPlayer, config.bigBlind);
       lastIndex = lastUnfolded(turnIndex - 1);
       turnIndex = wrappedIncrement(turnIndex);
       callback.collectBlinds(bigBlindPlayer.getName(), bigBlind, smallBlindPlayer.getName(), smallBlind);
@@ -444,12 +446,12 @@ public class Table {
     gameInProgress = false;
     if (players.size() == 1) {
       final Player winner = players.get(0);
-      roster.modifyMoney(winner.getName(), winner.getMoney() - Constants.START_MONEY);
+      roster.modifyMoney(winner.getName(), winner.getMoney() - config.startStash);
     } else {
       int highscore = 0;
       for (Player player: players) {
         final int playerMoney = player.getMoney();
-        roster.modifyMoney(player.getName(), playerMoney - Constants.START_MONEY);
+        roster.modifyMoney(player.getName(), playerMoney - config.startStash);
         if (playerMoney > highscore) {
           highscore = playerMoney;
         }

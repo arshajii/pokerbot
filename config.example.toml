@@ -1,0 +1,15 @@
+[irc]
+server = "irc.freenode.net"
+port = 6667
+# serverPassword = "abc123"
+nick = "PokerBot"
+channel = "#PokerBot"
+# channelPassword = "abc123"
+# adminPassword = "abc123"
+commandPrefix = "."
+verbose = true
+
+[game]
+startStash = 200
+# ante = 5
+bigBlind = 5

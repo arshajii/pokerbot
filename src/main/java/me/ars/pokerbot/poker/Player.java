@@ -1,12 +1,10 @@
 package me.ars.pokerbot.poker;
 
-import me.ars.pokerbot.Constants;
-
 import java.util.Objects;
 
 public class Player {
 	private final String name;
-	private int money = Constants.START_MONEY;
+	private int money;
 
 	/*
 	 * how much this player has payed in a given hand
@@ -21,10 +19,6 @@ public class Player {
 	@Override
 	public String toString() {
 		return name;
-	}
-
-	public Player(String name) {
-		this.name = name;
 	}
 
 	public Player(String name, int startMoney) {
